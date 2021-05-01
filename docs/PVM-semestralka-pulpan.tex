@@ -137,23 +137,23 @@ bottom=4cm,
 
 
 	
-	OpenFOAM je sada výpočetních nástrojů pro numerické simulace CFD (computational fluid dynamics) problémů, tedy problémů zabývajících se prouděním tekutin, vedením tepla a podobných procesů. OpenFOAM využívá k hledání řešení metody konečných objemů (FVM). My se budeme zabývat jen jednou částí celého řeťezce řešení problému a to sice popisem lineárních řešičů.
+	OpenFOAM je sada výpočetních nástrojů pro numerické simulace CFD (computational fluid dynamics) problémů, tedy problémů zabývajících se prouděním tekutin, vedením tepla a podobných procesů. OpenFOAM využívá k hledání řešení metody konečných objemů (FVM). 
 	
 	FVM je numerická metoda na řešení parciálních diferenciálních rovnic na dané 3D geometrii převedené na síť nepřekrývajích se elementů (konečných objemů). Tu pak pomocí diskretizace převedeme na soustavu algebraických rovnich, kterou řešíme pomocí lineárních řešiců a výsledné řešení obsahuje hodnotu sledovaných proměnných pro každý z těchto elementů.
 	
 	Budeme se zabývat jen posledním článkem řetězce, tedy lineárními řešiči. Na testovací úloze si ukážeme vhodnost jednotlivých řešičů a budeme sledovat vliv parametrů na konvergenci řešení. Úkolem lineárních řešičů (dále budeme používat jen \uv{řešičů}, pokud nebude hrozit záměna kontextu) je najít řešení soustavy algebraických rovnic tvaru
 	\begin{equation}
-		\boldsymbol{A}x = b,
+		\boldsymbol{A}\boldsymbol{x} = \boldsymbol{b},
 		\label{eq:linear_set}
 	\end{equation}
 	kde $\boldsymbol{A}$ je regulární matice popisující diskretizovaný model, $x$ vektor závislé proměnné a $b$ vektor pravé strany. 
 	
 	Pokud matice $\boldsymbol{A}$ umožňuje snadnou inverzi, je nejjednodušší získat přesné řešení soustavy přímým řešičem vztahem 
-	$$ x = \boldsymbol{A}^{-1} b.$$ 
-	Většinou ale nejde inverzi snadno nalézt a v tom případě se používají přibližné řešiče iterační. První variantou jsou stacionární iterační metody, kdy matici $\boldsymbol{A}$ můžeme rozdělit (například pomocí $LU$ rozkladu) na $\boldsymbol{A} = \boldsymbol{M} - \boldsymbol{N}$. matice $\pmb{M}$ musí být snadno invertovatelná a řešení pak hledáme poomocí iterací 
+	$$ \boldsymbol{x} = \boldsymbol{A}^{-1} \boldsymbol{b}.$$ 
+	Většinou ale nejde inverzi snadno nalézt a v tom případě se používají přibližné řešiče iterační. První možností jsou stacionární iterační metody, kdy matici $\boldsymbol{A}$ můžeme rozdělit (například pomocí $LU$ rozkladu) na $\boldsymbol{A} = \boldsymbol{M} - \boldsymbol{N}$. matice $\pmb{M}$ musí být snadno invertovatelná a řešení pak hledáme poomocí iterací 
 	
 	\begin{equation}
-		x^{(k+1)} = \boldsymbol{M}^{-1}(\boldsymbol{N}x^{(k)} + b)
+		\boldsymbol{x^{(k+1)}} = \boldsymbol{M}^{-1}(\boldsymbol{N}\boldsymbol{x^{(k)}} + \boldsymbol{b})
 		\label{eq:stat_iter}
 	\end{equation}
 
@@ -171,8 +171,8 @@ bottom=4cm,
 	
 	
 	Často se při numerickém řešení lineárních algebrických rovnic používá \textbf{předpodmínění}, které zajistí k rychlejší šíření informace na výpočetní mřížce. Při levém předpodmínění (existuje i pravé a centrální) Předpokládáme soustavu ve tvaru
-	$$\boldsymbol{M}^{-1}\boldsymbol{A}x =\boldsymbol{M}^{-1}\boldsymbol{b}$$
-	kde $\boldsymbol{M}$ je předpodmiňovač. Ten zajistí, že konvergence předpodmíněného systému je rychlejší, než bez něj. $\boldsymbol{M}$ je často uvažována jako snadno invertovatelná aproximace matice $\boldsymbol{A}$. Nejjednodušší volbou je tak $\boldsymbol{M} = \boldsymbol{I}$, což ovšem vede k nepodmíněnému problému. Ideální je naopak $\boldsymbol{M} = \boldsymbol{A}$, to ovšem znamená, že inverze předpodmiňovače je stejně náročná jako původní matice. JAK VYPADÁ ITERAČNÍ METODA - ZASE 
+	$$\boldsymbol{M}^{-1}\boldsymbol{A}\boldsymbol{x} =\boldsymbol{M}^{-1}\boldsymbol{b}$$
+	kde $\boldsymbol{M}$ je předpodmiňovač. Ten zajistí, že konvergence předpodmíněného systému je rychlejší, než bez něj. $\boldsymbol{M}$ je často uvažována jako snadno invertovatelná aproximace matice $\boldsymbol{A}$. Nejjednodušší volbou je tak $\boldsymbol{M} = \boldsymbol{I}$, což ovšem vede k nepodmíněnému problému. Ideální je naopak $\boldsymbol{M} = \boldsymbol{A}$, to ovšem znamená, že inverze předpodmiňovače je stejně náročná jako původní matice.
 	
 
 	
@@ -303,8 +303,6 @@ under-relaxation, a technique used for improving stability of a computation, par
 	
 	Lineární řešiče porovnáme na konkrétní úloze stacionárního proudění v lopatkové mříži. Zachováme přitom jednotné parametry nastavení úlohy až na nastavení jednotlivých lineárních řešičů. Zajímat nás bude konvergence řešení a výpočetní náročnost. Zadání úlohy je na obrázku \ref{fig:zadani}, který definuje geometrii úlohy i okrajové podmínky. 
 	
-	Používáme: simpleFoam - Steady-state solver for incompressible, turbulent flows
-	
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=1\linewidth]{zadani.png}
@@ -330,17 +328,17 @@ Okrajové podmínky pro jednotlivé veličiny, pro nás primárně pro rychlost 
 Ostatní parametry řešiče úlohy, netýkající se přímo lineárních řešičů jsou pro všechny simulace totožné a jsou v souborech \texttt{transportProperties}, \texttt{turbulenceProperties}, \texttt{fvSchemes} a \texttt{controlDict}. Zde uvedeme jen vybrané parametry popisující naší úlohu.
 
 \begin{itemize}
-	\item{\makebox[5cm]{application\hfill}simpleFoam}
-	\item{\makebox[5cm]{simulationType\hfill}RAS}
-	\item{\makebox[5cm]{RASmodel\hfill}kEpsilon}
-	\item{\makebox[5cm]{turbulence\hfill}on}
-	\item{\makebox[5cm]{transportModel\hfill}Newtonian}
-	\item{\makebox[5cm]{nu\hfill}1e-05}
+	\item{\makebox[5cm]{application:\hfill}simpleFoam}
+	\item{\makebox[5cm]{simulationType:\hfill}RAS}
+	\item{\makebox[5cm]{RASmodel:\hfill}kEpsilon}
+	\item{\makebox[5cm]{turbulence:\hfill}on}
+	\item{\makebox[5cm]{transportModel:\hfill}Newtonian}
+	\item{\makebox[5cm]{nu:\hfill}1e-05}
 \end{itemize}
 
 
 	
-Na ukázku je zde obrázek \ref{fig:pv-GAMG-GS} výsledného klidového stavu pořízený v ParaView. Výsledky úlohy řešené pomocí různých lineárních řešičů vypadají identicky.
+Na ukázku je zde obrázek \ref{fig:pv-GAMG-GS} výsledného klidového stavu pořízený v ParaView. Výsledky úlohy řešené pomocí různých lineárních řešičů vypadají prakticky identicky.
 	
 	 \begin{figure}[H]
 		\centering
@@ -356,10 +354,10 @@ Na lineárních řešičích budeme zkoumat vliv následujících parametrů na 
 	\item typ použitého řešiče
 	\item typ použitého předpodmiňovače
 	\item typ použitého smootheru
-	\item pod-relaxace
+	\item hodnotu pod-relaxace
 \end{itemize}
 
-Nastavení řešičů se v OpenFOAM dělá v souboru system/fvSolution. Ukázkový soubor je v příloze \ref{app:fvsol}.
+Nastavení řešičů se v OpenFOAM dělá v souboru \texttt{system/fvSolution}. Ukázkový soubor je v příloze \ref{app:fvsol}.
 	
  Nejprve nás zajímá typ použitého řešiče, případně přidruženého předpodmiňovače nebo smootheru. V tabulkách \ref{table:solvers_GAMG}, \ref{table:solvers_PCG} a \ref{table:solvers_smooth} jsou uvedená nastavení a výsledné počty iterací řešení úlohy a čas běhu simulace testovací úlohy.
  
@@ -413,6 +411,28 @@ diagonal & --- & diagonal & ---&474&679.26\\
 
 \end{table}
 
+Z výsledků je patrné, že pro naši úlohu ideální GAMG řešič, což odpovídá i obecným doporučením pro řešení úloh pro klidový stav. PCG/PBiCG řešiče dospějí ke stejným výsledkům, v podobném počtu iterací, jen za víc jak dvojnásobný čas. Obecně al GAMG není tak dobře škálovatelný jaklo PCG/PBiCG a je tedy proto možné, že pro jinou úlohu, případě i stejnou úlohu ale řádově větší síť by mohl být PCG/PBiCG řešič vhodnější.
+
+Na obrázku \ref{fig:p-residuum} jsou zobrazeny průběhy simulací pomocí závislosti velikosti rezidua pro tlak $p$ a různé řešiče. Na obrázku \ref{fig:ux-residuum} je pak totéž, jen pro rychlost v $x$ové souřadnici $U_x$.
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{p-residuum.png}
+	\caption{Konvergence lineárních řešičů v různé konfiguraci pro tlak $p$}
+	\label{fig:p-residuum}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{ux-residuum.png}
+	\caption{Konvergence lineárních řešičů v různé konfiguraci pro rychlost $U_x$}
+	\label{fig:ux-residuum}
+\end{figure}
+
+Z výsledků v tabulce \ref{table:solvers_smooth} je vidět, že smoothSolver není pro naši úlohu vhodný. Ani v jednom případě nedokonvergovala úloha ke stacionárnímu stavu v stanovém maximálním počtu 500 iterací.  I čas potřebný ke zpracování této úlohy je výrazně vyšší. 
+
  \begin{table}[H]
 	\centering
 	\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
@@ -437,27 +457,7 @@ Předpod.&Smoother&Předpod.&Smoother&\# iter&Čas\\
 	\label{table:solvers_smooth}
 \end{table}
 
-
-GAMG A PCG/PBiCG JSOU V POŘÁDKU. SMOOTH ALE ANI JEDEN NEDOBĚHL. PRŮBĚH JEDNOTLIVÝCH SIMULACÍ POMOCÍ VÝVOJE REZIDUA JE NA OBRÁZCÍCH XYZ (PRO P) A XZZ (PRO XOVOU SOUŘADCICI U). 
-
-NEJLEPŠÍCH VÝSLEDKŮ DOSAHUJE GAMG ŘEŠIČ. - VÍME PROČ? - OBECNĚ ZNÁMÝ FAKT, SPECIÁLNĚ PRO P. GAMG NENÍ ALE TAK ŠKÁLOVATELNÝ JAKO PCG/PBICG A TAK JE MOŽNÉ, ŽE PROP JINOU A SLOŽITEJŠÍ ÚLOHU BY MOHLO BÝT PCG VHODNĚJŠÍ.
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{p-residuum.png}
-	\caption{Konvergence lineárních řešičů v různé konfiguraci pro tlak $p$}
-	\label{fig:p-residuum}
-\end{figure}
-
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=1\linewidth]{ux-residuum.png}
-	\caption{Konvergence lineárních řešičů v různé konfiguraci pro rychlost $U_x$}
-	\label{fig:ux-residuum}
-\end{figure}
-
-NA OBRÁZCÍCH ASD A BNM JE VIDĚT PROBLÉM SE SMOOTH ŘEŠIČI. N EJEN ŽE JSOU EXTRÉMNĚ POMALÉ, ALE JEŠTĚ K TOMU NEJSOU SCHPNY V NASTAVENÉM POČTU MAXITER DOKONVERGOVAT. POPSAT OSCILACE A ŽE JDOU PROTI SOBĚ. KDYŽ NAJDU DŮVOD NEVHODNOSTI SMOOTH ŘEŠIČE, TAK DOPSAT.
+Na obrázcích \ref{fig:p-residuum-smooth} (pro tlak $p$) a \ref{fig:ux-residuum-smooth} (pro rychlost $U_x$) je vidět proč smooth řešič nekonverguje, nebo konverguje velmi pomalu. V obou sledovaných veličinách reziduum osciluje a jeho hodnota se snižuje velmi pomalu.
 
 \begin{figure}[H]
 	\centering
