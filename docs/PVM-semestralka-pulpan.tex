@@ -474,7 +474,8 @@ Na obrázcích \ref{fig:p-residuum-smooth} (pro tlak $p$) a \ref{fig:ux-residuum
 \end{figure}
 	
 
-DÁLE NÁS BUDE ZAJÍMAT POD-RELAXACE (VYSVĚTLENÍ JE JIŽ NAHOŘE) PRIMÁRNĚ U GAMG. V TABULCE HJK JSOU VÝSLEDKY. UŽ TADY OKOMENTOVAT.
+
+Na GAMG řešiči si ukážeme vliv hodnoty relaxace. Obecně platí, že vyšší relaxace zvyšuje rychlost konvergence, nižší metodu zestabilní. V tabulce \ref{table:solvers_gamg_relax} jsou výsledky pro různé hodnoty relaxačního parametru v porovnání s defaultní hodnotou $0.9$. 
 
  \begin{table}[H]
 	\centering
@@ -493,7 +494,7 @@ DÁLE NÁS BUDE ZAJÍMAT POD-RELAXACE (VYSVĚTLENÍ JE JIŽ NAHOŘE) PRIMÁRNĚ 
 		--- & GaussSeidel &  --- & GaussSeidel & 0.3&500+&151.49\\
 		--- & GaussSeidel &  --- & GaussSeidel & 0.95&285&114.15\\
 		--- & GaussSeidel &  --- & GaussSeidel & 0.98&500+&257.28\\		
-		DIC & GaussSeidel &  DILU & GaussSeidel & 0.98&475&160.59\\
+		%%%%DIC & GaussSeidel &  DILU & GaussSeidel & 0.98&475&160.59\\
 		\bottomrule
 	\end{tabular}
 	
@@ -501,7 +502,7 @@ DÁLE NÁS BUDE ZAJÍMAT POD-RELAXACE (VYSVĚTLENÍ JE JIŽ NAHOŘE) PRIMÁRNĚ 
 	
 \end{table}
 
-NA OBRÁZCÍCH X A Y JE OPĚT PRŮBĚH REZIDUA. Z NICH JE VIDĚT NESTABILITA .98 RELAXACE JAK V P TAK V U
+Ideální hodnotou pro nejrychlejší konvergenci je $0.95$, úloha dokoverguje v 285 iteracích za přibližně $114s$. Hodnota relaxace $0.3$ je moc nízká na to, aby úloha dokonvergovala v maximálním počtu 500 iterací.  Hodnota $0.98$ je naopak moc vysoká a reziduum úlohy se rozkmitá a řešení nekonverguje, jak je vidět z obrázků \ref{fig:p-residuum-relax} a \ref{fig:ux-residuum-relax}.
 
 \begin{figure}[H]
 	\centering
@@ -517,7 +518,7 @@ NA OBRÁZCÍCH X A Y JE OPĚT PRŮBĚH REZIDUA. Z NICH JE VIDĚT NESTABILITA .98
 	\label{fig:ux-residuum-relax}
 \end{figure}
 
-POKUS POUŽÍT UNDERRELAX U SMOOTH NEVYŠEL, VÝSLEDKY LEPŠÍ NEJSOU
+Zdálo by se, že použít relaxaci na \uv{opravení} smooth řešiče je dobrý nápad. Z tabulky \ref{table:solvers_set3}  je ale vidět, že se výsledky nijak nezlepší.
 
 \begin{table}[H]
 	\centering
@@ -541,26 +542,26 @@ POKUS POUŽÍT UNDERRELAX U SMOOTH NEVYŠEL, VÝSLEDKY LEPŠÍ NEJSOU
 	\label{table:solvers_set3}
 \end{table}
 
-ZAJÍMAVÝ JE TAKÉ VÝVOJ POČTU ITERACÍ JEDNOTLIVÝCH ŘEŠĚNÍ POMOCÍ LINEÁRNÍHO ŘEŠIČE - CO TO VLASTNĚ JE, JAK JE TO NASTAVENÉ, ATD - ZASE JE Z TOHO VIDĚT ŽE GAMG FUNGUJE NEJLÍP
+Další parametr, který popíše \uv{úspěšnost} lineárního řešiče při řešení úlohy je počet iteračních kroků lineárního řešiče v rámci časových kroků metody. V každém kroku řeší lineární řešič soustavu a zastaví iterování v chvíli, kdy dosáhne nastavené tolerance. Na obrázcích \ref{fig:p-iters-1} a \ref{fig:p-iters-2} je vidět tato závislost pro řešení tlaku $p$, na obrázku \ref{fig:ux-iters} pak pro rychlost $U_x$. Ze všech tří grafů opět vyplývá, že GAMG řešič dosahuje nejlepší konvergence. Naopak smoothSolver naráží ve všech časových iterací metody na maximální možnou hodnotu iterací řešiče $1000$.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-solver-iters-1.png}
-	\caption{Konvergence lineárních řešičů smoothSolver v různé konfiguraci pro rychlost $U_x$}
+	\caption{Počet iterací lineárního řešiče v závislosti na iteraci metody pro tlak $p$}
 	\label{fig:p-iters-1}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-solver-iters-2.png}
-	\caption{Konvergence lineárních řešičů smoothSolver v různé konfiguraci pro rychlost $U_x$}
+	\caption{Počet iterací lineárního řešiče v závislosti na iteraci metody pro tlak $p$}
 	\label{fig:p-iters-2}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{ux-solver-iters.png}
-	\caption{Konvergence lineárních řešičů smoothSolver v různé konfiguraci pro rychlost $U_x$}
+	\caption{Počet iterací lineárního řešiče v závislosti na iteraci metody pro rychlost $U_x$}
 	\label{fig:ux-iters}
 \end{figure}
 
@@ -569,110 +570,6 @@ ZAJÍMAVÝ JE TAKÉ VÝVOJ POČTU ITERACÍ JEDNOTLIVÝCH ŘEŠĚNÍ POMOCÍ LINE
 {\let\clearpage\relax \chapter{Závěr}}
 
 Nelze dělat obecné závěry, volba řešiče vždy záleží na úloze, nastavených parametrech, tolerancích a třeba i hordwaru, který máme k dispozici. Jediný závěr, který tedy můžeme udělat se týká jen naší úlohy, pro kterou je nejvhodnější řešič XYZ.
-
-
- \begin{table}[H]
-	\centering
-	\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
-	\renewcommand{\arraystretch}{1.9}
-	\begin{tabular}{*8c}
-		\toprule
-		\multicolumn{2}{c}{\textbf{Řešič pro $p$}} & \multicolumn{2}{c}{\textbf{Řešič pro $U$}}\\
-		\multicolumn{2}{c}{\textbf{GAMG}} & \multicolumn{2}{c}{\textbf{GAMG}}\\		
-		\midrule
-		%\textit{Předpod.}&\textit{Smoother}&\textit{Předpod.}&\textit{Smoother}&\textit{Relaxace}&\textit{ \# iter}&\textit{čas}\\
-		Předpod.&Smoother&Předpod.&Smoother&Relaxace& \# iter&Čas\\
-		
-		\midrule
-		
-		--- & DIC & --- &  DILU & 0.9&475 &157.94\\
-		
-		--- & GaussSeidel &  --- & GaussSeidel & 0.9&475&176.99\\
-		
-		--- & GaussSeidel &  --- & GaussSeidel & 0.3&500+&151.49\\
-		
-		--- & GaussSeidel &  --- & GaussSeidel & 0.95&285&114.15\\
-		
-		--- & GaussSeidel &  --- & GaussSeidel & 0.98&500+&257.28\\
-		
-		DIC & GaussSeidel &  DILU & GaussSeidel & 0.98&475&160.59\\
-		\bottomrule
-	\end{tabular}
-	
-	\label{table:solvers_set1}
-	
-\end{table}
-
-
-\begin{table}[H]
-	\centering
-	\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
-	\renewcommand{\arraystretch}{1.9}
-	\begin{tabular}{*8c}
-		\toprule	
-		
-		\multicolumn{2}{c}{\textbf{Řešič pro $p$}} & \multicolumn{2}{c}{\textbf{Řešič pro $U$}}\\
-		\multicolumn{2}{c}{\textbf{PCG}} & \multicolumn{2}{c}{\textbf{PBiCG}}\\		
-		\midrule
-		%\textit{Předpod.}&\textit{Smoother}&\textit{Předpod.}&\textit{Smoother}&\textit{Relaxace}&\textit{ \# iter}&\textit{čas}\\
-		Předpod.&Smoother&Předpod.&Smoother&Relaxace& \# iter&Čas\\
-		\midrule
-		
-		
-		DIC & --- &  DILU & --- &0.9&474&540.48\\								
-		
-		FDIC & --- &  DILU & --- &0.9&474&531.14\\	
-		
-		\shortstack{GAMG\\GS smooth.}& --- &  \shortstack{GAMG\\GS smooth.}& --- &0.9&475&184.85\\	
-		
-		diagonal & --- & diagonal & --- &0.9&474&679.26\\	
-		
-		\bottomrule
-	\end{tabular}
-	
-	\label{table:solvers_set2}
-	
-\end{table}
-
-\begin{table}[H]
-	\centering
-	\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
-	\renewcommand{\arraystretch}{1.9}
-	\begin{tabular}{*8c}
-		\toprule
-		
-		\multicolumn{2}{c}{\textbf{Řešič pro $p$}} & \multicolumn{2}{c}{\textbf{Řešič pro $U$}}\\
-		\multicolumn{2}{c}{\textbf{smoothSolver}} & \multicolumn{2}{c}{\textbf{smoothSolver}}\\		
-		\midrule
-		%\textit{Předpod.}&\textit{Smoother}&\textit{Předpod.}&\textit{Smoother}&\textit{Relaxace}&\textit{ \# iter}&\textit{čas}\\
-		Předpod.&Smoother&Předpod.&Smoother&Relaxace& \# iter&Čas\\
-		\midrule
-		
-		
-		
-		--- & DIC &  --- & GaussSeidel &0.9&500+&1136.21\\	
-		
-		--- & DIC & --- & DILU &0.9&500+&1039.73\\
-		
-		--- & GaussSeidel &   --- & GaussSeidel &0.9&500+&1011.42\\
-		
-		--- & GaussSeidel &  --- & GaussSeidel &0.3&500+&951.71\\
-		
-		--- & GaussSeidel &   --- & GaussSeidel &0.95&500+&1086.7\\
-		
-		--- & GaussSeidel &  --- & GaussSeidel &0.98&500+&1222.24\\
-		
-		FDIC & GaussSeidel &  --- & GaussSeidel &0.9&500+&1008.47\\
-		
-		--- & \shortstack{symGauss-\\Seidel} &  --- & \shortstack{symGauss-\\Seidel} &0.9&500+&1370.58\\	
-		\bottomrule
-	\end{tabular}
-	
-	\label{table:solvers_set3}
-\end{table}
-
-
-
 
 
 
