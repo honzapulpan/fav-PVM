@@ -311,9 +311,8 @@ under-relaxation, a technique used for improving stability of a computation, par
 	\end{figure}
 
 
-Nejprve musíme definovat síť na které budeme naši úlohu řešit. .... Nadefinovaná síť je na obrázku \ref{fig:pvmesh}, konkrétní definice v přiloženém souboru \texttt{blockMeshDict}.
+Nejprve musíme definovat síť na které budeme naši úlohu řešit. Úloha je v 2D, al OpenFOAM řeší vše ve 3D. Třtí souřadnici tedy nastavíme minimální a budeme ji ve výsledcích vlastně ignorovat.  Nejvíce se toho bude dít kolem \uv{vykousknuté} části a proto v těchto místech síť uděláme hustší jak j vidět na obrázku ...Celá síť je pak na obrázku \ref{fig:pvmesh}, konkrétní definice v přiloženém souboru \texttt{blockMeshDict}. Síť obsahuje XYZ jednotlivých objemů, na kterých budeme úlohu numericky integrovat,
 
-PŘIDAT OBRÁZKY S DETAILAMA OKOLO TOHO VYKOUSNUTÍ, UKÁZAT, ŽE TO JE NEHOMOGENNÍ, SPOČÍTAT KOLIK JE TAM VLASTNĚ TĚCH POLÍČEK
 
 \begin{figure}[H]
 	\centering
@@ -569,7 +568,7 @@ Další parametr, který popíše \uv{úspěšnost} lineárního řešiče při 
 
 {\let\clearpage\relax \chapter{Závěr}}
 
-Nelze dělat obecné závěry, volba řešiče vždy záleží na úloze, nastavených parametrech, tolerancích a třeba i hordwaru, který máme k dispozici. Jediný závěr, který tedy můžeme udělat se týká jen naší úlohy, pro kterou je nejvhodnější řešič XYZ.
+Ukázali jsme, jakými parametry lineárních řešičů se dá ovlivnit výsledná konvergence úlohy. Obecně nelze říci, který řešič je nejvhodnější a to ani pro konkrétní úlohu. Pro naši ukázkovou úlohu proudění v lopatkové mříži a pro konkrétní síť je nejvhodnější GAMG řešič s GaussSeidel smootherem a relaxací nastavenou na $0.95$. Tato volba ale nemusí být optimální pro jinou síť, jinak nastavené parametry turbulence nebo i jiný hardware, na kterém úlohu řešíme. Předchozí text by tedy měl sloužit přinejlepším jen jako přehled a ukázka řešičů dostupných v OpenFOAM.
 
 
 
