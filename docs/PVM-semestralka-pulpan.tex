@@ -311,7 +311,15 @@ under-relaxation, a technique used for improving stability of a computation, par
 	\end{figure}
 
 
-Nejprve musíme definovat síť na které budeme naši úlohu řešit. Úloha je v 2D, al OpenFOAM řeší vše ve 3D. Třtí souřadnici tedy nastavíme minimální a budeme ji ve výsledcích vlastně ignorovat.  Nejvíce se toho bude dít kolem \uv{vykousknuté} části a proto v těchto místech síť uděláme hustší jak j vidět na obrázku ...Celá síť je pak na obrázku \ref{fig:pvmesh}, konkrétní definice v přiloženém souboru \texttt{blockMeshDict}. Síť obsahuje XYZ jednotlivých objemů, na kterých budeme úlohu numericky integrovat,
+Nejprve musíme definovat síť na které budeme naši úlohu řešit. Úloha je v 2D, ale OpenFOAM řeší vše ve 3D. Třetí souřadnici tedy nastavíme minimální, jen jako jednu buňku, a budeme ji ve výsledcích vlastně ignorovat.  Nejvíce se toho bude dít kolem \uv{vykousknuté} části a proto v těchto místech síť uděláme hustší jak je vidět na obrázku \ref{fig:pvmesh-detail}. Celá síť je pak na obrázku \ref{fig:pvmesh} a obsahuje celkem $108800$ jednotlivých buněk, na kterých budeme úlohu numericky integrovat. Konkrétní definice je v souboru \texttt{blockMeshDict} v příloze \ref{app:blockmeshdict}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{pv-mesh-detail.png}
+	\caption{Detail sítě řešeného modelu}
+	\label{fig:pvmesh-detail}
+\end{figure}
+
 
 
 \begin{figure}[H]
@@ -574,6 +582,154 @@ Ukázali jsme, jakými parametry lineárních řešičů se dá ovlivnit výsled
 
 \newpage
 \appendix
+
+{\let\clearpage\relax \chapter{blockMeshDict}\label{app:blockmeshdict}}
+\begin{verbatim}
+/*---------------------------*- C++ -*-----------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2006                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*-----------------------------------------------------------------*/
+FoamFile
+{
+	version         2.0;
+	format          ascii;
+	class           dictionary;
+	object          blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale   1;
+
+vertices
+(
+(0 0    0)
+(1 0    0)
+(3 0    0)
+(3 0.43 0)
+(1 0.43 0)
+(1 0.57 0)
+(3 0.57 0)
+(3 1    0)
+(1 1    0)
+(0 1    0)
+(0 0.57 0)
+(0 0.43 0)
+
+
+(0 0    0.1)
+(1 0    0.1)
+(3 0    0.1)
+(3 0.43 0.1)
+(1 0.43 0.1)
+(1 0.57 0.1)
+(3 0.57 0.1)
+(3 1    0.1)
+(1 1    0.1)
+(0 1    0.1)
+(0 0.57 0.1)
+(0 0.43 0.1)
+
+
+);
+
+blocks
+(
+hex (0 1 4 11 12 13 16 23) (200 86 1) simpleGrading (0.2 1 1)
+hex (1 2 3 4 13 14 15 16) (400 86 1) simpleGrading (5 1 1)
+hex (11 4 5 10 23 16 17 22) (200 28 1) simpleGrading (0.2 1 1)
+hex (10 5 8 9 22 17 20 21) (200 86 1) simpleGrading (0.2 1 1)
+hex (5 6 7 8 17 18 19 20) (400 86 1) simpleGrading (5 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+frontAndBack
+{
+	type empty;
+	faces
+	(
+	(0 1 4 11)
+	(1 2 3 4)
+	(11 4 5 10)
+	(10 5 8 9)
+	(5 6 7 8)
+	
+	(12 13 16 23)
+	(13 14 15 16)
+	(23 16 17 22)
+	(22 17 20 21)
+	(17 18 19 20)
+	);
+}
+
+top	
+{
+	type cyclic;
+	neighbourPatch bottom;
+	faces
+	(
+	(9 8 20 21)
+	(8 7 19 20)
+	);
+}
+
+bottom	
+{
+	type cyclic;
+	neighbourPatch top;
+	faces
+	(
+	(0 1 13 12)
+	(1 2 14 13)
+	);
+}
+
+fixedBalk
+{
+	type wall;
+	faces
+	(
+	(5 6 18 17)
+	(4 5 17 16)
+	(4 3 15 16)
+	);	
+}
+
+outlet
+{
+	type patch;
+	faces
+	(
+	(6 7 19 18)
+	(2 3 15 14)
+	);
+}
+
+inlet
+{
+	type patch;
+	faces
+	(
+	(0 11 23 12)
+	(11 10 22 23)
+	(10 9 21 22)
+	);
+}
+);
+mergePatchPairs
+(
+);
+
+// ************************************************************** //
+\end{verbatim}
+
 {\let\clearpage\relax \chapter{fvSolution}\label{app:fvsol}}
 \begin{verbatim}
 	/*---------------------------*- C++ -*-----------------------------*\
