@@ -170,22 +170,21 @@ bottom=4cm,
 	\end{equation} 
 	
 	
-	Často se při numerickém řešení lineárních algebrických rovnic používá \textbf{předpodmínění}, které zajistí k rychlejší šíření informace na výpočetní mřížce. Při levém předpodmínění (existuje i pravé a centrální) Předpokládáme soustavu ve tvaru
+	Často se při numerickém řešení lineárních algebrických rovnic používá \textbf{předpodmínění}, které zajistí rychlejší šíření informace na síti. Při levém předpodmínění (existuje i pravé a centrální) předpokládáme soustavu ve tvaru
 	$$\boldsymbol{M}^{-1}\boldsymbol{A}\boldsymbol{x} =\boldsymbol{M}^{-1}\boldsymbol{b}$$
 	kde $\boldsymbol{M}$ je předpodmiňovač. Ten zajistí, že konvergence předpodmíněného systému je rychlejší, než bez něj. $\boldsymbol{M}$ je často uvažována jako snadno invertovatelná aproximace matice $\boldsymbol{A}$. Nejjednodušší volbou je tak $\boldsymbol{M} = \boldsymbol{I}$, což ovšem vede k nepodmíněnému problému. Ideální je naopak $\boldsymbol{M} = \boldsymbol{A}$, to ovšem znamená, že inverze předpodmiňovače je stejně náročná jako původní matice.
 	
 
+	Ke zlepšení konvergence se u lineárních řešičů využívá často i tzv. \textbf{smoother}. Jacobiho, nebo Gauss-Seidelova metoda jsou často využívány jako smoother. Po každé iteraci řešiče metody se pustí několik iterací vybraného smootheru, který \uv{vyhladí} špičku v reziduu a tím i sníží jeho normovanou hodnotu. Na rozdíl od předpodmínění dokáže smoother snížit závislost sítě na počtu iterací. Gaussův-Seidelův smoother používá například následujícího vztahu
 	
-	SMOOTHER
-	
-	Although the preconditioners discussed before can considerably reduce the number of iterations, they do not normally reduce the mesh dependency of the numbers of iterations. OpenFOAM supplies the following smoothers to be used with the solvers in the smoothers/ directory:
-	
-	These smoothers are discussed in Section 9. For now, it suffices to view them as basic iterative methods (e.g. Gauss-Seidel) which effectively smooth out the error associated with
-	the current approximate solution
-	
-	
+	\begin{equation}
+		\boldsymbol{x^{(k+1)}} = \boldsymbol{x^{(k)}}+\boldsymbol{L}^{-1}(\boldsymbol{b} -  \boldsymbol{A}\boldsymbol{x^{(k)}}),
+		\label{eq:gs_smoother}
+	\end{equation}
 
-
+kde $\boldsymbol{L}$ je dolní trojúhelníková část matice $\boldsymbol{A}$.
+	
+	
 	{\let\clearpage\relax \chapter{Lineární řešiče v OpenFOAM}}
 
 OpenFOAM obsahuje kromě základního přímého řešiče \texttt{diagonalSolver} tři základní typy řešičů:
