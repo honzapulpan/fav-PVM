@@ -139,62 +139,129 @@ bottom=4cm,
 	
 	OpenFOAM je sada výpočetních nástrojů pro numerické simulace CFD (computational fluid dynamics) problémů, tedy problémů zabývajících se prouděním tekutin, vedením tepla a podobných procesů. OpenFOAM využívá k hledání řešení metody konečných objemů (FVM). 
 	
-	FVM je numerická metoda na řešení parciálních diferenciálních rovnic na dané 3D geometrii převedené na síť nepřekrývajích se elementů (konečných objemů). Tu pak pomocí diskretizace převedeme na soustavu algebraických rovnich, kterou řešíme pomocí lineárních řešiců a výsledné řešení obsahuje hodnotu sledovaných proměnných pro každý z těchto elementů.
-	
-	Budeme se zabývat jen posledním článkem řetězce, tedy lineárními řešiči. Na testovací úloze si ukážeme vhodnost jednotlivých řešičů a budeme sledovat vliv parametrů na konvergenci řešení. Úkolem lineárních řešičů (dále budeme používat jen \uv{řešičů}, pokud nebude hrozit záměna kontextu) je najít řešení soustavy algebraických rovnic tvaru
+	FVM je numerická metoda na řešení parciálních diferenciálních rovnic na dané 3D geometrii převedené na síť nepřekrývajích se elementů (konečných objemů). Diskretizací úlohy získáme soustavu lineárních algebraických rovnic v neznámé $\boldsymbol{x}$ pro každou ze sledovaných proměnných. Soustava je tvaru
 	\begin{equation}
 		\boldsymbol{A}\boldsymbol{x} = \boldsymbol{b},
 		\label{eq:linear_set}
 	\end{equation}
-	kde $\boldsymbol{A}$ je regulární matice popisující diskretizovaný model, $x$ vektor závislé proměnné a $b$ vektor pravé strany. 
+	kde $\boldsymbol{A}$ je regulární matice popisující diskretizovaný model, $x$ vektor závislé proměnné a $b$ vektor pravé strany obsahující všechny zdroje, okrajové podmínky a všechny komponenty, které nelze linearizovat. 
 	
-	Pokud matice $\boldsymbol{A}$ umožňuje snadnou inverzi, je nejjednodušší získat přesné řešení soustavy přímým řešičem vztahem 
-	$$ \boldsymbol{x} = \boldsymbol{A}^{-1} \boldsymbol{b}.$$ 
-	Většinou ale nejde inverzi snadno nalézt a v tom případě se používají přibližné řešiče iterační. První možností jsou stacionární iterační metody, kdy matici $\boldsymbol{A}$ můžeme rozdělit (například pomocí $LU$ rozkladu) na $\boldsymbol{A} = \boldsymbol{M} - \boldsymbol{N}$. matice $\pmb{M}$ musí být snadno invertovatelná a řešení pak hledáme poomocí iterací 
+	Zabývat se budeme jen posledním článkem řetězce, tedy lineárními řešiči lineárních algebraických rovnic. Na testovací úloze si ukážeme vhodnost jednotlivých řešičů a budeme sledovat vliv parametrů na konvergenci řešení. Dále budeme používat lineárních řešičích mluvit jen jako o  \uv{řešičích}, pokud nebude hrozit záměna kontextu.
 	
-	\begin{equation}
-		\boldsymbol{x^{(k+1)}} = \boldsymbol{M}^{-1}(\boldsymbol{N}\boldsymbol{x^{(k)}} + \boldsymbol{b})
-		\label{eq:stat_iter}
-	\end{equation}
+	Obecně lze soustavu lineárních rovnic řešit buď přímými nebo iteračními řešiči. Úlohy CFD jsou většinou silně nelineární a proto není jejich řešení pomocí přímých řešičů snadné a vyžaduje větší výpočetní výkon. Přesto si ukážeme i tuto cestu.
+	
+	Přímé řešiče hledají přesné řešení pomocí inverzní matice $\boldsymbol{A} ^{-1} $ ve formě
+$$ \boldsymbol{x} = \boldsymbol{A}^{-1} \boldsymbol{b}.$$  
+Většina přímých metod je založna na Gaussově eliminici a případné transformaci úlohy na úlohu se stejným řešením ale snadněji řešitelnou například pomocí LU nebo DILU rozkladu.
 
-	Pevný bod operátoru \eqref{eq:stat_iter} je pak přesným řešením soustavy \eqref{eq:linear_set}.  
+	Většinou ale nejde inverzi snadno nalézt a v tom případě se používají přibližné řešiče iterační. Výhodou těchto metod je mnohem menší výpočetní náročnost i náročnost na paměť. Pomocí iterací počítáme posloupnost řešení $\boldsymbol{x}^{n}$, která za daných podmínek konverguje k řešení $\boldsymbol{x}$.  Využívané iterační řešiče jsou Gaussova-Seidelova metoda, metody Krylovových prostorů (kam patří například metoda sdružených gradientů) a víceúrovňové metody
 	
-	Druhou používanou metodou iteračních řešičů jsou metody Krylovových podprostorů. Hledáme tak přibližné řešení v podprostorech s rostoucí dimenzí generovaných čtvercovou maticí $\boldsymbol{A}$ a vektorem $\boldsymbol{b}$. Krylovův podprostor $r$tého řádu je definován jako 
-	$$\mathcal{K}_r(\boldsymbol{A},\boldsymbol{b}) = \textrm{span}\{\boldsymbol{b}, \boldsymbol{Ab}, \boldsymbol{A}^2\boldsymbol{b}, \dots, \boldsymbol{A}^{r-1}\boldsymbol{b}\}.$$
-	TROCHU LÍP POPSAT, KOUKNOUT DO NA
-	
-	Iterační metody obecně měří chybu aproximace řešení pomocí reziduí, tedy dosazením aproximovaného řešení do původních rovnic a vypočtením rozdílu oproti pravé straně $\boldsymbol{b}$. Reziduum $\boldsymbol{r}$ definujeme jako 
+	Iterační metody obecně měří chybu aproximace řešení v každém kroku pomocí reziduí, tedy dosazením aproximovaného řešení do původních rovnic a vypočtením rozdílu oproti pravé straně $\boldsymbol{b}$. Reziduum $\boldsymbol{r} ^{(n)} $ definujeme jako 
+
 	\begin{equation}
-		\boldsymbol{r} = \boldsymbol{b}-\boldsymbol{A}x.
+		\boldsymbol{r} ^{(n)} = \boldsymbol{b}-\boldsymbol{A} \boldsymbol{x}^{(n)}.
 		\label{eq:residuum}
 	\end{equation} 
-	
-	
-	Často se při numerickém řešení lineárních algebrických rovnic používá \textbf{předpodmínění}, které zajistí rychlejší šíření informace na síti. Při levém předpodmínění (existuje i pravé a centrální) předpokládáme soustavu ve tvaru
-	$$\boldsymbol{M}^{-1}\boldsymbol{A}\boldsymbol{x} =\boldsymbol{M}^{-1}\boldsymbol{b}$$
-	kde $\boldsymbol{M}$ je předpodmiňovač. Ten zajistí, že konvergence předpodmíněného systému je rychlejší, než bez něj. $\boldsymbol{M}$ je často uvažována jako snadno invertovatelná aproximace matice $\boldsymbol{A}$. Nejjednodušší volbou je tak $\boldsymbol{M} = \boldsymbol{I}$, což ovšem vede k nepodmíněnému problému. Ideální je naopak $\boldsymbol{M} = \boldsymbol{A}$, to ovšem znamená, že inverze předpodmiňovače je stejně náročná jako původní matice.
-	
 
-	Ke zlepšení konvergence se u lineárních řešičů využívá často i tzv. \textbf{smoother}. Jacobiho, nebo Gauss-Seidelova metoda jsou často využívány jako smoother. Po každé iteraci řešiče metody se pustí několik iterací vybraného smootheru, který \uv{vyhladí} špičku v reziduu a tím i sníží jeho normovanou hodnotu. Na rozdíl od předpodmínění dokáže smoother snížit závislost sítě na počtu iterací. Gaussův-Seidelův smoother používá například následujícího vztahu
+Zastavení řešiče je pak definováno obecně jako pokles residua pod nastavenou hodnotu
+
+$$\Vert{\boldsymbol{r}^{(n)}}\Vert < \epsilon.$$
+	
+	OpenFOAM obsahuje kromě přímých řešičů hlavně iterační řešiče pomocí gradientních metod, víceúrovňových metod a řešiče pomocí smootherů (vyhlazovačů).
+	
+\textbf{Gradientní metody} jsou založeny na tom, že úlohu \ref{eq:linear_set} lze přeformulovat na úlohu minimalizace kvadratické funkce
+\begin{equation}
+	\boldsymbol{Q}(\boldsymbol{x}) = \frac{1}{2} \boldsymbol{x}^T \boldsymbol{A} \boldsymbol{x}-\boldsymbol{b}^T \boldsymbol{x} + \boldsymbol{c}.
+	\label{eq:quad_func}
+\end{equation}
+V případě symetrické a positivně definitní matice $\boldsymbol{A}$ je iterační metoda řešení úlohy \ref{eq:linear_set} definována vztahem
+\begin{equation}
+	\boldsymbol{x}^{(n+1)} = \boldsymbol{x}^{(n)} + \alpha^{(n)} \left( \boldsymbol{\delta} \boldsymbol{x}^{(n)} \right),
+	\label{eq:grad_iter}
+\end{equation}
+kde $\alpha^{(n)}$ je relaxační faktor a $\boldsymbol{\delta} \boldsymbol{x}^{(n)}$ je člen minimalizující \ref{eq:quad_func}, který lze získat například metodou největšího spádu, kdy použijeme jako minimalizující prvek vektor ve směru největšího spádu. To ale často vede k oscilacím okolo minima a proto se většinou používá metoda sdružených gradientů. Ta pracuje s posloupností $N$ směrů  $\boldsymbol{d}^{(0)}, \boldsymbol{d}^{(1)}, \boldsymbol{d}^{(2)} \cdots \boldsymbol{d}^{(N-1)}$ takových, že splňují
+\begin{equation*}
+	\left(\boldsymbol{d}^{(n)}\right)^T\boldsymbol{A} \boldsymbol{d}^{(m)} = 0
+\end{equation*}
+a jsou tedy $\boldsymbol{A}$-ortogonální. Iterační metoda je popsaná následujícím vztahem
+
+\begin{equation*}
+	\boldsymbol{x}^{(n+1)} = \boldsymbol{x}^{(n)} + \alpha^{(n)} \boldsymbol{d}^{(n)}.
+	\label{eq:grad_cg}
+\end{equation*}
+
+V případě, že není matice $\boldsymbol{A}$ symetrická, lze použít metodu bi-sdružených gradientů, která konverguje úlohu na úlohu se symetrickou maticí následovně.
+
+\begin{equation}
+	\begin{bmatrix}
+		0 & \boldsymbol{A}\\
+		\boldsymbol{A}^T & 0
+	\end{bmatrix}
+	\begin{bmatrix}
+		\hat{\boldsymbol{x}}\\
+		\boldsymbol{x}
+	\end{bmatrix} =
+	\begin{bmatrix}
+		\boldsymbol{b}\\
+		0
+	\end{bmatrix}
+\end{equation}
+
+%%% https://astra.nti.tul.cz/~petr.sidlof/vyuka/NMPT/pr05%20-%20Reseni%20linearnich%20systemu%20a%20paralelizace.pdf
+
+V součastnosti asi nejpoužívanější jsou \textbf{víceúrovňové (multigrid) metody}. Ty odstraňují základní problém Krylovovských metod, tedy vysokou náročnost na hardware už pro středně velké úlohy. Základní myšlenkou je využití několika různě velkých sití. Ty jemnější pro detailnější řešení a odtsranění vysokofrekvenčních chyb, hrubší pak pro rychlé odstranění nízkofrekvnčních chyb, které nejsou na jemnějších rozpoznatelné a proto často prodlužují konvergenci. 
+
+Víceúrovňová metoda postupuje v následujících krocích:
+\begin{enumerate}
+	\item několik kroků iterační metody (např. Gauss-Seidel) na jemné síti - pre-smoothing
+	\item projekce na hrubší síť - restriction
+	\item řešení na hrubé síti (na velmi hrubé síti možné použít i přímý řešič), odstranění nízkofrekvenčních chyb
+	\item projekce zpět na jemnou síť - prolongation
+	\item několik kroků iterační metody na vyhlazení vysokofrekvenčních chyb - post-smoothing
+\end{enumerate}
+
+Úrovní může být i více než 2 a podle způsobu přechodů (restriction a prolongation) mezi nimy se mluví o V-cyklech, W-cyklech, případně F-cyklech. Víceúrovňové metody se využívají ve 2 variantách:
+\begin{itemize}
+	\item Geometrické - na úrovni sítě, využívá informaci o sousedních elementech
+	\item Algebraické - na úrovni matice, bez znalosti gometrie, je univerzální pro jakékoliv problémy
+\end{itemize}
+	
+%	\begin{equation}
+%		\boldsymbol{x^{(k+1)}} = \boldsymbol{M}^{-1}(\boldsymbol{N}\boldsymbol{x^{(k)}} + \boldsymbol{b})
+%		\label{eq:stat_iter}
+%	\end{equation}
+
+%	Pevný bod operátoru \eqref{eq:stat_iter} je pak přesným řešením soustavy \eqref{eq:linear_set}.  
+	
+%	Druhou používanou metodou iteračních řešičů jsou metody Krylovových podprostorů. Hledáme tak přibližné řešení v podprostorech s rostoucí dimenzí generovaných čtvercovou maticí $\boldsymbol{A}$ a vektorem $\boldsymbol{b}$. Krylovův podprostor $r$tého řádu je definován jako 
+%	$$\mathcal{K}_r(\boldsymbol{A},\boldsymbol{b}) = \textrm{span}\{\boldsymbol{b}, \boldsymbol{Ab}, \boldsymbol{A}^2\boldsymbol{b}, \dots, \boldsymbol{A}^{r-1}\boldsymbol{b}\}.$$
+%	TROCHU LÍP POPSAT, KOUKNOUT DO NA
+		
+	Iterační metody řešení lineárních algebrických rovnic často využívají \textbf{předpodmínění} (preconditiong). To převede úlohu do tvaru s ekvivalentním řešením ale lepšímy spektrálnímy vlastnostmi matice soustavy.  Při levém předpodmínění (existuje i pravé a centrální) předpokládáme soustavu ve tvaru
+	$$\boldsymbol{P}^{-1}\boldsymbol{A}\boldsymbol{x} =\boldsymbol{P}^{-1}\boldsymbol{b}$$
+	kde $\boldsymbol{P}$ je předpodmiňovač. Ten zajistí, že konvergence předpodmíněného systému je rychlejší, než bez něj. Při hledání předpodmiňovače $\boldsymbol{P}$ je často uvažována nějaká snadno invertovatelná aproximace matice $\boldsymbol{A}$. Nejjednodušší volbou je tak $\boldsymbol{P} = \boldsymbol{I}$, což ovšem vede k nepodmíněnému problému. Ideální je naopak $\boldsymbol{P} = \boldsymbol{A}$, to ovšem znamená, že inverze předpodmiňovače je stejně náročná jako původní matice. Často se tak volí různé rozklady matice $\boldsymbol{A}$, jako jsou LU, ILU nebo DILU rozklady.
+	
+	Pro zrychlení konvergence se u iteračních řešičů využívá často i tzv. \textbf{vyhlazovač} (smoother), pro který lze používat např. základní Jacobiho, nebo Gauss-Seidelova metodu. Po každé iteraci řešiče metody se pustí několik kroků vybraného vyhlazovače, který \uv{vyhladí} špičky v reziduu a tím i sníží jeho normovanou hodnotu. Na rozdíl od předpodmínění dokáže vyhlazovač snížit počet kroků nezávisle na velikosti sítě. Pro příklad uveďme iterační vztah pro Gaussův-Seidelův vyhlazovač, kde $\boldsymbol{L}$ je dolní trojúhelníková část matice $\boldsymbol{A}$.
 	
 	\begin{equation}
 		\boldsymbol{x^{(k+1)}} = \boldsymbol{x^{(k)}}+\boldsymbol{L}^{-1}(\boldsymbol{b} -  \boldsymbol{A}\boldsymbol{x^{(k)}}),
 		\label{eq:gs_smoother}
 	\end{equation}
 
-kde $\boldsymbol{L}$ je dolní trojúhelníková část matice $\boldsymbol{A}$.
+Další vyhlazovače jsou pak založeny na principu LU, DILU, nebo Choleského rozkladu.
 	
 	
 	{\let\clearpage\relax \chapter{Lineární řešiče v OpenFOAM}}
 
 OpenFOAM obsahuje kromě základního přímého řešiče \texttt{diagonalSolver} tři základní typy řešičů:
 \begin{enumerate}
-	\item řešiče metodou konjugovaných gradientů 
-	\item smooth řešiče
-	\item multigrid řešiče
+	\item řešiče metodou sdružených gradientů 
+	\item víceúrovňové řešiče
+	\item řešiče založené na vyhlazovači
+
 \end{enumerate}
 
-Jednotlivé řešiče jsou popsány v tabulce \ref{table:solvers}.
+Konkrétní řešiče jsou popsány v tabulce \ref{table:solvers}.
 
 \begin{table}[H]
 	\centering
@@ -204,12 +271,12 @@ Jednotlivé řešiče jsou popsány v tabulce \ref{table:solvers}.
 		\toprule
 		\textbf{Řešič} & \textbf{Označení}&\textbf{Matice $\boldsymbol{A}$}\\
 		\midrule
-		{\small Preconditioned conjugate gradient}& PCG& sym\\
-		{\small Preconditioned bi-conjugate gradient}& PBiCG&asym \\		
-		{\small Stabilized Preconditioned (bi-)conjugate gradient}& PBiCGStab&sym/asym  \\
-		{\small Solver using a smoother}& smoothSolver&sym/asym \\
-		{\small Generalised geometric-algebraic multi-grid}& GAMG&sym/asym  \\
-		{\small Diagonal solver for explicit systems}& 	diagonal \\
+		{\small Předpodmíněné sdružené gradienty}& PCG& sym\\
+		{\small Předpodmíněné bi-conjugate gradient}& PBiCG&asym \\		
+		{\small Stabilizované předpodmíněné (bi-)conjugate gradient}& PBiCGStab&sym/asym  \\
+		{\small Řešič používající vyhlazovač}& smoothSolver&sym/asym \\
+		{\small Víceúrovňový řešič}& GAMG&sym/asym  \\
+		{\small Diagonální přímý řešič}& 	diagonal \\
 	
 		\bottomrule
 	\end{tabular}
@@ -219,12 +286,14 @@ Jednotlivé řešiče jsou popsány v tabulce \ref{table:solvers}.
 		
 To který řešič je možné použít je závislé na matici $\boldsymbol{A}$ a tom, jestli je symetrická nebo nesymetrická. Symetrie $\boldsymbol{A}$ samozřejmě závisí na rovnicích, které chceme řešit. V případě, že zvolíme nesprávný řešič vzhledem k symetričnosti matice $\boldsymbol{A}$ OpenFOAM sám volbu opraví.
 
-Reziduum je během jednotlivých iterací vyhodnocováno pomocí vztahu \eqref{eq:residuum}. Každý řešič má k reziduu trochu jíný přístup, obecně ale dochází k normalizaci a škálování rezidua vztahy
+Doporučeným řešičem v OpenFOAM je, jak jsme již uvedli v teoretické části obecně,  víceúrovňový řešič GAMG (geometric-algebraic multi-grid). Dál je obsažen i řešič založený na vyhlazovači, kdy je možné vybrat použitý smoother.  Většinou je Gauss-Seidel nejlepší volbou.
+
+V průběhu řešení je reziduum vyhodnocováno během jednotlivých iterací pomocí vztahu \eqref{eq:residuum}. Každý řešič má k reziduu trochu jíný přístup, obecně ale dochází k normalizaci a škálování rezidua vztahy
 
 $$n = \sum \left( | \boldsymbol{A}x - \boldsymbol{A}\hat{x} | + | \boldsymbol{b} - \boldsymbol{A}\hat{x} | \right),$$
 $$r = \frac{1}{n} \sum | \boldsymbol{b} - \boldsymbol{A}x |.$$ 
 
-Pro každý typ řešice se nastaví parametr pro velikost rezidua (\texttt{tolerance}) a také relativní toleranci (\texttt{relTol}) pro poměr aktuálního rezidua v rámci jedné iterace a počátečního rezidua před začátkem iterace. Řešič se následně zastaví pokud je splněna alespoň jedna z těchto podmínek:
+Pro každý typ řešice je třeba nastavit parametr pro velikost rezidua (\texttt{tolerance}) a také relativní toleranci (\texttt{relTol}) pro poměr aktuálního rezidua v rámci jedné iterace a počátečního rezidua před začátkem iterace. Lineární řešič se následně zastaví pokud je splněna alespoň jedna z těchto podmínek:
 \begin{enumerate}
 	\item reziduum je menší než nastavená \texttt{tolerance},
 	\item relativní tolerance je menší než nastavená \texttt{relTol},
@@ -232,55 +301,30 @@ Pro každý typ řešice se nastaví parametr pro velikost rezidua (\texttt{tole
 \end{enumerate}
 
 
-Metoda sdružených gradientů (conjugent gradients) - PCG. PBiCG, PBiCGStab
+%Metoda sdružených gradientů (conjugent gradients) - PCG. PBiCG, PBiCGStab
 
-Metoda sdružených gradientů (CG) je iterační algoritmus řešení soustav lineárních rovnic, který využívá sdružených směrů a vyžaduje symetrickou matici (postivně definitní) matici $\boldsymbol{A}$. Proto vznikla i metoda "bi-conjugate gradients" (dvojitých sdružených směrů), která pracuje s asymetrickými maticemi. OpenFoam obsahuje řešiče PCG a PBiCG s implementací těchto řešičů. Obě varianty jsou předpodmíňěné. Navíc je obsažen i PBiCGStab řešič, který umí pracovat se symetricvkou i nesymetrickou maticí $\boldsymbol{A}$.
+%Metoda sdružených gradientů (CG) je iterační algoritmus řešení soustav lineárních rovnic, který využívá sdružených směrů a vyžaduje symetrickou matici (postivně definitní) matici $\boldsymbol{A}$. Proto vznikla i metoda "bi-conjugate gradients" (dvojitých sdružených směrů), která pracuje s asymetrickými maticemi. OpenFoam obsahuje řešiče PCG a PBiCG s implementací těchto řešičů. Obě varianty jsou předpodmíňěné. Navíc je obsažen i PBiCGStab řešič, který umí pracovat se symetricvkou i nesymetrickou maticí $\boldsymbol{A}$.
 
-Předpodmičovač je volitelný a obsahuje následující možnosti:
+Předpodmičovač je u většiny řešičů volitelný i když velmi doporučovaný. OpenFOAM implementuje následující předpodmiňovače:
 
-Preconditioner	Keyword
-Diagonal incomplete-Cholesky (symmetric)	DIC
-Faster diagonal incomplete-Cholesky (DIC with caching)	FDIC
-Diagonal incomplete-LU (asymmetric)	DILU
-Diagonal	diagonal
-Geometric-algebraic multi-grid	GAMG
-No preconditioning	none
-
-
-
-NĚCO O SMOOTH ŘEŠIČÍCH 
-
-The solvers that use a smoother require the smoother to be specified. The smoother options are listed in Table 6.11. Generally GaussSeidel is the most reliable option, but for bad matrices DIC can offer better convergence. In some cases, additional post-smoothing using GaussSeidel is further beneficial, i.e. the method denoted as DICGaussSeidel
-
-
-Smoother	Keyword
-Gauss-Seidel	GaussSeidel
-Diagonal incomplete-Cholesky (symmetric)	DIC
-Diagonal incomplete-Cholesky with Gauss-Seidel (symmetric)	DICGaussSeidel
-
-
-
-
-
-NĚCO O MULTIGRID ŘEŠIČÍCH (MULTIGRID METODY)
-
-The generalised method of geometric-algebraic multi-grid (GAMG) uses the principle of: generating a quick solution on a mesh with a small number of cells; mapping this solution onto a finer mesh; using it as an initial guess to obtain an accurate solution on the fine mesh. GAMG is faster than standard methods when the increase in speed by solving first on coarser meshes outweighs the additional costs of mesh refinement and mapping of field data. In practice, GAMG starts with the mesh specified by the user and coarsens/refines the mesh in stages. The user is only required to specify an approximate mesh size at the most coarse level in terms of the number of cells nCoarsestCells.
-
-
-NĚCO O RESIDUAL CONTROL
-
-By default, cases will run until the time settings are achieved in the case controlDict dictionary. Alternatively, the residualControl object can be added to the fvSolution dictionary to enable additional controls. This operates in two modes:
-
-Steady state
-To terminate the case when the initial residual of the field equations falls below user-specified threshold values for SIMPLE-based solvers:
-
-residualControl
-{
-	p           1e-2;
-	"(Ux Uy)"   1e-4;
-	"(k|epsilon|omega)" 1e-4;
-}
-
+\begin{table}[H]
+	\centering
+	\caption{přdpodmiňovače obsažené v OpenFOAM}
+	\renewcommand{\arraystretch}{1.7}
+	\begin{tabular}{*2l}
+		\toprule
+		\textbf{Předpodmiňovač} & \textbf{Označení}\\
+		\midrule
+		{\small Diagonal incomplete-Cholesky (symetrický)}& DIC\\
+		{\small Faster diagonal incomplete-Cholesky (DIC with caching)	}& FDIC \\		
+		{\small Diagonální neúplný LU rozklad}& DILU  \\
+		{\small Diagonální přímý}& diagonal \\
+		{\small Víceúrovňový předpodmiňovač}& GAMG  \\
+		\bottomrule
+	\end{tabular}
+	
+	\label{table:solvers}
+\end{table}
 
 NĚCO O RELAXACI
 
@@ -340,6 +384,8 @@ Ostatní parametry řešiče úlohy, netýkající se přímo lineárních řeš
 	\item{\makebox[5cm]{turbulence:\hfill}on}
 	\item{\makebox[5cm]{transportModel:\hfill}Newtonian}
 	\item{\makebox[5cm]{nu:\hfill}1e-05}
+	\item{\makebox[5cm]{residualControl p:\hfill}1e-02}
+	\item{\makebox[5cm]{residualControl ostatní:\hfill}1e-04}
 \end{itemize}
 
 
