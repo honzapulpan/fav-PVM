@@ -134,61 +134,58 @@ bottom=4cm,
 
 	{\let\clearpage\relax \chapter{Teoretický úvod}}
 
-	OpenFOAM je sada výpočetních nástrojů pro numerické simulace CFD (computational fluid dynamics) problémů, tedy problémů zabývajících se prouděním tekutin, vedením tepla a podobných procesů. OpenFOAM využívá k hledání řešení metody konečných objemů (FVM). 
+	OpenFOAM je sada výpočetních nástrojů pro numerické simulace problémů zabývajících se prouděním tekutin, vedením tepla a podobných procesů, anglicky označovaných CFD. Hlavní metodou  hledání řešení jsou metody konečných objemů (FVM). 
 	
-	FVM je numerická metoda na řešení parciálních diferenciálních rovnic na dané geometrii transformované na síť nepřekrývajích se elementů (konečných objemů). Diskretizací úlohy získáme soustavu lineárních algebraických rovnic v neznámé $\boldsymbol{x}$ pro každou ze sledovaných proměnných. Soustava je tvaru
+	FVM je numerická metoda na řešení parciálních diferenciálních rovnic na dané geometrii, transformované na síť nepřekrývajích se elementů (konečných objemů). Diskretizací úlohy získáme soustavu lineárních algebraických rovnic v neznámé $\boldsymbol{x}$ pro každou ze sledovaných proměnných. Soustava je tvaru
 	\begin{equation}
 		\boldsymbol{A}\boldsymbol{x} = \boldsymbol{b},
 		\label{eq:linear_set}
 	\end{equation}
 	kde $\boldsymbol{A}$ je regulární matice popisující diskretizovaný model, $\boldsymbol{x}$ vektor závislé proměnné a $\boldsymbol{b}$ vektor pravé strany obsahující všechny zdroje, okrajové podmínky a všechny komponenty, které nelze linearizovat. 
 	
-	Zabývat se budeme jen posledním článkem řetězce, tedy lineárními řešiči algebraických rovnic. Na testovací úloze si ukážeme vhodnost jednotlivých řešičů a budeme sledovat vliv parametrů na konvergenci řešení. Dále budeme o lineárních řešičích mluvit jen jako o  \uv{řešičích}, pokud nebude hrozit záměna kontextu.
+	Objektem našeho zájmu jsou lineární řešiče algebraických rovnic. Na testovací úloze ukážeme vhodnost jednotlivých řešičů a budeme sledovat vliv parametrů na konvergenci řešení. V dalším textu budeme o lineárních řešičích mluvit jen jako o  \uv{řešičích}, pokud nebude hrozit záměna kontextu.
 	
-	Obecně lze soustavu lineárních rovnic řešit buď přímými nebo iteračními řešiči. Úlohy CFD jsou většinou silně nelineární a proto není jejich řešení pomocí přímých řešičů snadné a vyžaduje větší výpočetní výkon.
+	Obecně lze soustavu lineárních rovnic řešit buď přímými nebo iteračními řešiči. Úlohy CFD jsou většinou silně nelineární a proto není jejich řešení pomocí přímých řešičů snadné a vyžaduje větší výpočetní výkon a dostupnou paměť.
 	
-	Přímé řešiče hledají přesné řešení pomocí inverzní matice $\boldsymbol{A} ^{-1}$ ve formě
-$$ \boldsymbol{x} = \boldsymbol{A}^{-1} \boldsymbol{b}.$$  
+	\textbf{Přímé řešiče} hledají přesné řešení pomocí inverzní matice $\boldsymbol{A} ^{-1}$ ve formě
+\begin{equation}
+	\boldsymbol{x} = \boldsymbol{A}^{-1} \boldsymbol{b}.	
+\end{equation}  
 Většina přímých metod je založna na Gaussově eliminici a případné transformaci úlohy na úlohu se stejným řešením ale snadněji řešitelnou, například pomocí LU nebo DILU rozkladu.
 
-	I když přímé řešiče naleznou vždy přesné řešení v konečném počtu kroků, výpočetní náročnost je extrémní. Inverzi $\boldsymbol{A} ^{-1}$ není výpočetně levné nalézt a proto se většinou používají přibližné řešiče iterační. Výhodou těchto metod je mnohem menší výpočetní náročnost i náročnost na paměť. Pomocí iterací počítáme posloupnost řešení $\boldsymbol{x}^{(n)}$, která za daných podmínek konverguje k řešení $\boldsymbol{x}$.  Nejčastěji využívané iterační řešiče jsou Gaussova-Seidelova metoda, metody Krylovových prostorů (kam patří například metoda sdružených gradientů) a víceúrovňové metody.
+	I když přímé řešiče naleznou vždy přesné řešení v konečném počtu kroků, výpočetní náročnost je extrémní. Inverzi $\boldsymbol{A} ^{-1}$ není výpočetně levné nalézt a proto se většinou používají přibližné řešiče iterační. Výhodou těchto metod je mnohem menší výpočetní náročnost i náročnost na paměť. V jednotlivých iteracích metoda počítá posloupnost řešení $\boldsymbol{x}^{(n)}$, která za daných podmínek konverguje k řešení $\boldsymbol{x}$.  Nejčastěji využívané iterační řešiče jsou Gaussova-Seidelova metoda, metody Krylovových prostorů (kam patří například metoda sdružených gradientů) a víceúrovňové metody.
 	
-	Iterační metody obecně měří chybu aproximace řešení v každém kroku pomocí reziduí, tedy dosazením aproximovaného řešení do původních rovnic a vypočtením rozdílu oproti pravé straně $\boldsymbol{b}$. Reziduum $\boldsymbol{r} ^{(n)} $ definujeme jako 
-
+	Protože iterační metody nezaručují konvergenci k přesnému řešení v konečném počtu kroků, zastaví se metoda po dosažení nastavené chyby aproximovaného řešení. Iterační metody obecně měří chybu aproximace v každém kroku pomocí reziduí, tedy dosazením aproximovaného řešení do původních rovnic a vypočtením rozdílu oproti pravé straně $\boldsymbol{b}$. Reziduum $\boldsymbol{r} ^{(n)} $ definujeme jako 
 	\begin{equation}
 		\boldsymbol{r} ^{(n)} = \boldsymbol{b}-\boldsymbol{A} \boldsymbol{x}^{(n)}.
 		\label{eq:residuum}
 	\end{equation} 
-
 Zastavení řešiče je pak definováno obecně jako pokles residua pod nastavenou hodnotu
-
-$$\Vert{\boldsymbol{r}^{(n)}}\Vert < \epsilon.$$
-	
+\begin{equation}
+	\Vert{\boldsymbol{r}^{(n)}}\Vert < \epsilon.
+\end{equation}
 	OpenFOAM obsahuje kromě přímých řešičů hlavně iterační řešiče pomocí gradientních metod, víceúrovňových metod a řešiče pomocí smootherů (vyhlazovačů).
 	
-\textbf{Gradientní metody} jsou založeny na tom, že úlohu \eqref{eq:linear_set} lze přeformulovat na úlohu minimalizace kvadratické funkce
+\textbf{Gradientní metody} jsou založeny na principu přeformulévání úlohy \eqref{eq:linear_set} na úlohu  minimalizace kvadratické funkce
 \begin{equation}
 	\boldsymbol{Q}(\boldsymbol{x}) = \frac{1}{2} \boldsymbol{x}^T \boldsymbol{A} \boldsymbol{x}-\boldsymbol{b}^T \boldsymbol{x} + \boldsymbol{c}.
 	\label{eq:quad_func}
 \end{equation}
-V případě symetrické a positivně definitní matice $\boldsymbol{A}$ je iterační metoda řešení úlohy \eqref{eq:linear_set} definována vztahem
+V případě symetrické a pozitivně definitní matice $\boldsymbol{A}$ je iterační metoda řešení úlohy \eqref{eq:linear_set} definována vztahem
 \begin{equation}
 	\boldsymbol{x}^{(n+1)} = \boldsymbol{x}^{(n)} + \alpha^{(n)} \left( \boldsymbol{\delta} \boldsymbol{x}^{(n)} \right),
 	\label{eq:grad_iter}
 \end{equation}
-kde $\alpha^{(n)}$ je relaxační faktor (viz níže) a $\boldsymbol{\delta} \boldsymbol{x}^{(n)}$ je člen minimalizující funkci \eqref{eq:quad_func}, který lze získat například metodou největšího spádu, kdy použijeme jako minimalizující prvek gradient $\nabla Q(\boldsymbol{x}^{(n)})$. To ale často vede k oscilacím okolo minima a proto se většinou používá metoda sdružených gradientů. Ta pracuje s posloupností $N$ směrů  $\boldsymbol{d}^{(0)}, \boldsymbol{d}^{(1)}, \boldsymbol{d}^{(2)} \cdots \boldsymbol{d}^{(N-1)}$ takových, že splňují
+kde $\alpha^{(n)}$ je relaxační faktor (viz níže) a $\boldsymbol{\delta} \boldsymbol{x}^{(n)}$ je člen minimalizující funkci \eqref{eq:quad_func}, který lze získat například metodou největšího spádu, kdy použijeme jako minimalizující prvek gradient $\nabla Q(\boldsymbol{x}^{(n)})$. To ale často vede k oscilacím okolo minima a proto se více používá metoda sdružených gradientů. Ta pracuje s posloupností $N$ směrů  $\boldsymbol{d}^{(0)}, \boldsymbol{d}^{(1)}, \boldsymbol{d}^{(2)} \cdots \boldsymbol{d}^{(N-1)}$ takových, že splňují
 \begin{equation*}
 	\left(\boldsymbol{d}^{(n)}\right)^T\boldsymbol{A} \boldsymbol{d}^{(m)} = 0
 \end{equation*}
-a jsou tedy $\boldsymbol{A}$-ortogonální. Iterační metoda je popsaná následujícím vztahem
-
+a jsou tedy $\boldsymbol{A}$-ortogonální. Metoda sdružených gradientů je popsaná následujícím vztahem
 \begin{equation*}
 	\boldsymbol{x}^{(n+1)} = \boldsymbol{x}^{(n)} + \alpha^{(n)} \boldsymbol{d}^{(n)}.
 	\label{eq:grad_cg}
 \end{equation*}
-
-V případě, že není matice $\boldsymbol{A}$ symetrická, lze použít metodu bi-sdružených gradientů, která konverguje úlohu na úlohu se symetrickou maticí následovně.
-
+V případě, že není matice $\boldsymbol{A}$ symetrická, lze použít metodu bi-sdružených gradientů, která transformuje úlohu \eqref{eq:linear_set} na úlohu se symetrickou maticí následovně.
 \begin{equation}
 	\begin{bmatrix}
 		0 & \boldsymbol{A}\\
@@ -203,10 +200,7 @@ V případě, že není matice $\boldsymbol{A}$ symetrická, lze použít metodu
 		0
 	\end{bmatrix}
 \end{equation}
-
-%%% https://astra.nti.tul.cz/~petr.sidlof/vyuka/NMPT/pr05%20-%20Reseni%20linearnich%20systemu%20a%20paralelizace.pdf
-
-V součastnosti asi nejpoužívanější jsou \textbf{víceúrovňové} (multigrid) metody. Ty odstraňují základní problém Krylovovských metod, tedy vysokou náročnost na hardware už pro středně velké úlohy. Základní myšlenkou je využití několika různě velkých sití. Ty jemnější pro detailnější řešení a odstranění vysokofrekvenčních chyb, hrubší pak pro rychlé odstranění nízkofrekvenčních chyb, které nejsou na jemnějších sítích rozpoznatelné a proto často prodlužují konvergenci. 
+V součastnosti asi nejpoužívanější jsou \textbf{víceúrovňové} (multigrid) metody. Ty odstraňují základní problém Krylovovských metod, tedy vysokou náročnost na hardware už pro středně velké úlohy. Základní myšlenkou je využití několika různě velkých sití. Jemnější pro detailnější řešení a odstranění vysokofrekvenčních chyb, hrubší pak pro rychlé odstranění nízkofrekvenčních chyb, které nejsou na jemnějších sítích rozpoznatelné a proto často prodlužují konvergenci. 
 
 Víceúrovňová metoda postupuje v následujících krocích:
 \begin{enumerate}
@@ -217,10 +211,10 @@ Víceúrovňová metoda postupuje v následujících krocích:
 	\item několik kroků iterační metody na vyhlazení vysokofrekvenčních chyb - post-smoothing.
 \end{enumerate}
 
-Úrovní sítí je většinou více než 2 a podle způsobu přechodů (restriction a prolongation fáze) mezi nimy se mluví o tzv. V-cyklech, W-cyklech, případně F-cyklech. Víceúrovňové metody se využívají ve 2 variantách:
+Úrovní sítí je většinou více než 2 a podle způsobu přechodů mezi nimy (restriction a prolongation fáze) se mluví o tzv. V-cyklech, W-cyklech, případně F-cyklech. Víceúrovňové metody jsou dvojího typu:
 \begin{itemize}
 	\item geometrické - na úrovni sítě, využívá informaci o sousedních elementech,
-	\item algebraické - na úrovni matice, bez znalosti gometrie, je univerzální pro jakékoliv problémy.
+	\item algebraické - na úrovni matice, bez znalosti geometrie, je univerzální pro jakékoliv problémy.
 \end{itemize}
 	
 %	\begin{equation}
@@ -235,19 +229,19 @@ Víceúrovňová metoda postupuje v následujících krocích:
 %	TROCHU LÍP POPSAT, KOUKNOUT DO NA
 		
 	Iterační metody řešení lineárních algebrických rovnic často využívají \textbf{předpodmínění} (preconditiong). To převede úlohu do tvaru s ekvivalentním řešením ale lepšímy spektrálnímy vlastnostmi matice soustavy.  Při levém předpodmínění (existuje i pravé a centrální) předpokládáme soustavu ve tvaru
-	$$\boldsymbol{P}^{-1}\boldsymbol{A}\boldsymbol{x} =\boldsymbol{P}^{-1}\boldsymbol{b},$$
-	kde $\boldsymbol{P}$ je předpodmiňovač. Ten zajistí, že konvergence předpodmíněného systému je rychlejší než bez něj. Při hledání předpodmiňovače $\boldsymbol{P}$ je často uvažována nějaká snadno invertovatelná aproximace matice $\boldsymbol{A}$. Nejjednodušší volbou je tak $\boldsymbol{P} = \boldsymbol{I}$, což ovšem vede k nepodmíněnému problému. Ideální je naopak $\boldsymbol{P} = \boldsymbol{A}$, to ovšem znamená, že inverze předpodmiňovače je stejně náročná jako původní matice. Často se tak volí různé rozklady matice $\boldsymbol{A}$, jako jsou LU, ILU nebo DILU rozklady.
+\begin{equation}
+	\boldsymbol{P}^{-1}\boldsymbol{A}\boldsymbol{x} =\boldsymbol{P}^{-1}\boldsymbol{b},
+\end{equation}
+kde $\boldsymbol{P}$ je předpodmiňovač. Ten zajistí, že konvergence předpodmíněného systému je rychlejší než bez něj. Při hledání předpodmiňovače $\boldsymbol{P}$ je často uvažována nějaká snadno invertovatelná aproximace matice $\boldsymbol{A}$. Nejjednodušší volbou je tak $\boldsymbol{P} = \boldsymbol{I}$, což ovšem vede k nepodmíněnému problému. Ideální je naopak $\boldsymbol{P} = \boldsymbol{A}$, to ovšem znamená, že inverze předpodmiňovače je stejně náročná jako původní matice. Často se tak volí různé rozklady matice $\boldsymbol{A}$, jako jsou LU, ILU, DILU nebo Choleského rozklady.
 	
-	Pro zrychlení konvergence se u iteračních řešičů využívá tzv. \textbf{vyhlazovač} (smoother), pro který lze používat např. základní Jacobiho, nebo Gaussovu-Seidelovu metodu. Po každé iteraci řešiče metody se pustí několik kroků vybraného vyhlazovače, který \uv{vyhladí} špičky v reziduu a tím i sníží jeho normovanou hodnotu. Na rozdíl od předpodmínění dokáže vyhlazovač snížit počet kroků nezávisle na velikosti sítě. Pro příklad uveďme iterační vztah pro Gaussův-Seidelův vyhlazovač, kde $\boldsymbol{L}$ je dolní trojúhelníková část matice $\boldsymbol{A}$.
-	
+	Pro zrychlení konvergence se u iteračních řešičů využívá tzv. \textbf{vyhlazovač} (smoother), pro který lze používat např. základní Jacobiho, nebo Gaussovu-Seidelovu metodu. Po každé iteraci řešiče metody se pustí několik kroků vybraného vyhlazovače, který \uv{vyhladí} špičky v reziduu a tím i sníží jeho normovanou hodnotu. Na rozdíl od předpodmínění dokáže vyhlazovač snížit počet iterací nezávisle na velikosti sítě. Pro příklad uveďme iterační vztah pro Gaussův-Seidelův vyhlazovač, kde $\boldsymbol{L}$ je dolní trojúhelníková část matice $\boldsymbol{A}$.
 	\begin{equation}
-		\boldsymbol{x^{(k+1)}} = \boldsymbol{x^{(k)}}+\boldsymbol{L}^{-1}(\boldsymbol{b} -  \boldsymbol{A}\boldsymbol{x^{(k)}}),
+		\boldsymbol{x} ^{(k+1)} = \boldsymbol{x}^{(k)} +\boldsymbol{L}^{-1}(\boldsymbol{b} -  \boldsymbol{A}\boldsymbol{x} ^{(k)}),
 		\label{eq:gs_smoother}
 	\end{equation}
-
 Další vyhlazovače jsou pak založeny na principu LU, DILU, nebo Choleského rozkladu.
 	
-	Aby se zlepšila stabilita numerického řešiče, doporučuje se využít \textbf{relaxaci} metody. Pomocí relaxačního faktoru $\alpha, 0 < \alpha \leq 1 $, limituje relaxace změnu řešení mezi jednotlivými iteracemi dle vztahu \eqref{eq:grad_iter}. Pokud je   $\alpha = 1$ , žádná relaxace se neuplatňuje, $\alpha = 0$ znamená žádnou změnu mezi jednotlivými kroky.   Optimální $\alpha$ je dostatečně malé, aby zabránilo oscilacím v numerických výpočtech a zároveň dostatečně velké, aby nezpomalovalo nadměrně konvergenci. 
+	Aby se zlepšila stabilita numerického řešiče, doporučuje se využít \textbf{relaxaci} metody. Pomocí relaxačního faktoru $\alpha,\; 0 < \alpha \leq 1 $, limituje relaxace změnu řešení mezi jednotlivými iteracemi dle vztahu \eqref{eq:grad_iter}. Pokud je   $\alpha = 1$ , žádná relaxace se neuplatňuje, $\alpha = 0$ znamená žádnou změnu mezi jednotlivými kroky.   Optimální $\alpha$ je dostatečně malé, aby zabránilo oscilacím v numerických výpočtech a zároveň dostatečně velké, aby nezpomalovalo nadměrně konvergenci. 
 	
 	{\let\clearpage\relax \chapter{Lineární řešiče v OpenFOAM}}
 
