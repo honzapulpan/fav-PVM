@@ -253,11 +253,11 @@ OpenFOAM obsahuje kromě základního přímého řešiče \texttt{diagonalSolve
 
 \end{enumerate}
 
-Konkrétní řešiče jsou popsány v tabulce \ref{table:solvers}.
+V tabulce \ref{table:solvers} jsou uvedeny konkrétní řešiče.
 
 \begin{table}[H]
 	\centering
-	\caption{řešiče v rámci OpenFOAM}
+	\caption{Lineární řešiče implementované v OpenFOAM}
 	\renewcommand{\arraystretch}{1.7}
 	\begin{tabular}{*3l}
 		\toprule
@@ -276,15 +276,18 @@ Konkrétní řešiče jsou popsány v tabulce \ref{table:solvers}.
 	\label{table:solvers}
 \end{table}
 		
-To který řešič je možné použít je závislé na matici $\boldsymbol{A}$ a tom, jestli je symetrická nebo nesymetrická. Symetrie $\boldsymbol{A}$ samozřejmě závisí na rovnicích, které chceme řešit. V případě, že zvolíme nesprávný řešič vzhledem k symetričnosti matice $\boldsymbol{A}$ OpenFOAM sám volbu opraví.
+	To který řešič je možné použít je závislé na symetrii matice $\boldsymbol{A}$. Ta samozřejmě závisí na řešených rovnicích. V případě, že zvolíme nesprávný řešič vzhledem k symetričnosti matice $\boldsymbol{A}$ OpenFOAM sám volbu opraví.
+	
+	Řešičem o kterém jsme dosud nemluvili je řešič založený na vyhlazovači, kdy vybraný smoother slouží nejen k vyhlazení, ale i k řešení soustavy.  Většinou je nejlepší volbou Gauss-Seidel.
+	
+	Doporučeným řešičem v OpenFOAM je, jak jsme již uvedli v teoretické části obecně,  víceúrovňový řešič GAMG (geometric-algebraic multi-grid).
 
-Doporučeným řešičem v OpenFOAM je, jak jsme již uvedli v teoretické části obecně,  víceúrovňový řešič GAMG (geometric-algebraic multi-grid). Řešičem o kterém jsme dosud nemluvili je řešič založený na vyhlazovači, kdy vybraný smoother slouží nejen k vyhlazení, ale i k řešení soustavy.  Většinou je nejlepší volbou Gauss-Seidel.
-
-Během jednotlivých iterací je v OpenFOAM reziduum vyhodnocováno pomocí vztahu \eqref{eq:residuum}. Každý řešič má k reziduu trochu jíný přístup, obecně ale dochází k normalizaci a škálování rezidua $\boldsymbol{r}$ vztahy
-
-$$n = \sum \left( | \boldsymbol{A} \boldsymbol{x} - \boldsymbol{A} \overline{\boldsymbol{x}} | + | \boldsymbol{b} - \boldsymbol{A} \overline{\boldsymbol{x}} | \right),$$
-$$\boldsymbol{r} = \frac{1}{n} \sum | \boldsymbol{b} - \boldsymbol{A} \boldsymbol{x} |,$$
-
+	Pro zastavení řešiče se využívá vypočtené reziduum, během jednotlivých iterací je vyhodnocováno pomocí vztahu \eqref{eq:residuum}. Každý řešič má k reziduu trochu jíný přístup, obecně ale dochází k normalizaci a škálování rezidua $\boldsymbol{r}$ vztahy
+\begin{eqnarray}
+n &=& \sum \left( | \boldsymbol{A} \boldsymbol{x} - \boldsymbol{A} \overline{\boldsymbol{x}} | + | \boldsymbol{b} - \boldsymbol{A} \overline{\boldsymbol{x}} | \right), \nonumber \\
+ \nonumber \\
+\boldsymbol{r} &=& \frac{1}{n} \sum | \boldsymbol{b} - \boldsymbol{A} \boldsymbol{x} |,
+\end{eqnarray}
 kde $\overline{\boldsymbol{x}}$ je průměrný vektor řešení.  
 
 Pro každý typ řešice je třeba nastavit zastavovací parametr pro velikost rezidua (\texttt{tolerance}) a také relativní toleranci (\texttt{relTol}) což je poměr aktuálního rezidua a počátečního rezidua před začátkem iterace. Lineární řešič se následně zastaví pokud je splněna alespoň jedna z těchto podmínek:
@@ -299,7 +302,7 @@ Pro každý typ řešice je třeba nastavit zastavovací parametr pro velikost r
 
 %Metoda sdružených gradientů (CG) je iterační algoritmus řešení soustav lineárních rovnic, který využívá sdružených směrů a vyžaduje symetrickou matici (postivně definitní) matici $\boldsymbol{A}$. Proto vznikla i metoda "bi-conjugate gradients" (dvojitých sdružených směrů), která pracuje s asymetrickými maticemi. OpenFoam obsahuje řešiče PCG a PBiCG s implementací těchto řešičů. Obě varianty jsou předpodmíňěné. Navíc je obsažen i PBiCGStab řešič, který umí pracovat se symetricvkou i nesymetrickou maticí $\boldsymbol{A}$.
 
-U většiny řešičů je pak volitlně nastaven předpodmičovač případně vyhlazovač. Podporované předpodmiňovače jsou v tabulce \ref{table:preconditioners} a vyhlazovače v tabulce \ref{table:smoothers}.
+U většiny řešičů je pak volitelně nastaven předpodmiňovač případně vyhlazovač. Podporované předpodmiňovače jsou v tabulce \ref{table:preconditioners} a vyhlazovače v tabulce \ref{table:smoothers}.
 
 \begin{table}[H]
 	\centering
@@ -335,32 +338,25 @@ U většiny řešičů je pak volitlně nastaven předpodmičovač případně v
 		{\small Symetrický Gaussův-Seidelův vyhlazovač}& symGaussSeidel \\
 		\bottomrule
 	\end{tabular}
-	
 	\label{table:smoothers}
 \end{table}
 
 	{\let\clearpage\relax \chapter{Porovnání řešičů}}
 	
-	Lineární řešiče porovnáme na konkrétní úloze stacionárního proudění v lopatkové mříži. Zachováme přitom jednotné parametry nastavení úlohy až na nastavení jednotlivých lineárních řešičů. Zajímat nás bude konvergence řešení a výpočetní náročnost. Zadání úlohy je na obrázku \ref{fig:zadani}, který definuje geometrii úlohy i okrajové podmínky. 
-	
+	Lineární řešiče porovnáme na simulaci úlohy stacionárního proudění v lopatkové mříži. Zachováme přitom jednotné parametry nastavení úlohy kromě nastavení jednotlivých lineárních řešičů. Zajímat nás bude konvergence řešení a výpočetní náročnost. Sledovat budeme počet časových kroků výpočtu stacionárního stavu, počet iterací lineárního řešiče a celkový čas simulace úlohy. Zadání úlohy je na obrázku \ref{fig:zadani}, který definuje geometrii úlohy i okrajové podmínky. 
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=1\linewidth]{zadani.png}
-		\caption{Popis řešeného modelu}
+		\caption{Zadání řešeného modelu}
 		\label{fig:zadani}
 	\end{figure}
-
-
-Nejprve musíme definovat síť na které budeme naši úlohu řešit. Úloha je v 2D, ale OpenFOAM řeší vše ve 3D. Třetí souřadnici tedy nastavíme minimální, jen jako jednu buňku, a budeme ji ve výsledcích vlastně ignorovat.  Nejvíce se toho bude dít kolem \uv{vykousknuté} části a proto v těchto místech síť uděláme hustší jak je vidět na obrázku \ref{fig:pvmesh-detail}. Celá síť je pak na obrázku \ref{fig:pvmesh} a obsahuje celkem $108800$ jednotlivých buněk, na kterých budeme úlohu numericky integrovat. Konkrétní definice je v souboru \texttt{blockMeshDict} v příloze \ref{app:blockmeshdict}.
-
+Prvním krokem je definice sítě na které budeme naši úlohu řešit. Úloha je v 2D, ale OpenFOAM řeší vše ve 3D. Třetí souřadnici tedy nastavíme minimální, jen jako jednu buňku, a budeme ji ve výsledcích vlastně ignorovat.  Nejvíce se toho bude dít kolem \uv{vykousnuté} části a proto v těchto místech síť nastavíme hustší, jak je vidět na obrázku \ref{fig:pvmesh-detail}. Celá síť je pak na obrázku \ref{fig:pvmesh} a obsahuje celkem $108800$ jednotlivých buněk. Konkrétní definice sítě je v souboru \texttt{blockMeshDict} v příloze \ref{app:blockmeshdict}.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{pv-mesh-detail.png}
 	\caption{Detail sítě řešeného modelu}
 	\label{fig:pvmesh-detail}
 \end{figure}
-
-
 
 \begin{figure}[H]
 	\centering
@@ -372,7 +368,7 @@ Nejprve musíme definovat síť na které budeme naši úlohu řešit. Úloha je
 
 Okrajové podmínky pro jednotlivé veličiny, pro nás primárně pro rychlost $U$ a tlak $p$  jsou definovány v souborech ve složce \texttt{0}.
 
-Ostatní parametry řešiče úlohy, netýkající se přímo lineárních řešičů jsou pro všechny simulace totožné a jsou v souborech \texttt{transportProperties}, \texttt{turbulenceProperties}, \texttt{fvSchemes} a \texttt{controlDict}. Zde uvedeme jen vybrané parametry popisující naší úlohu.
+Ostatní parametry řešiče úlohy, netýkající se přímo lineárních řešičů, jsou pro všechny simulace totožné a jsou v souborech \texttt{transportProperties}, \texttt{turbulenceProperties}, \texttt{fvSchemes} a \texttt{controlDict}. Zde uvedeme jen vybrané parametry popisující naší úlohu.
 
 \begin{itemize}
 	\item{\makebox[5cm]{application:\hfill}simpleFoam}
@@ -381,129 +377,102 @@ Ostatní parametry řešiče úlohy, netýkající se přímo lineárních řeš
 	\item{\makebox[5cm]{turbulence:\hfill}on}
 	\item{\makebox[5cm]{transportModel:\hfill}Newtonian}
 	\item{\makebox[5cm]{nu:\hfill}1e-05}
+	\item{\makebox[5cm]{startTime:\hfill}0}
+	\item{\makebox[5cm]{endTime:\hfill}500}		
 	\item{\makebox[5cm]{residualControl p:\hfill}1e-02}
 	\item{\makebox[5cm]{residualControl ostatní:\hfill}1e-04}
 \end{itemize}
-
-
 	
-Na ukázku je zde obrázek \ref{fig:pv-GAMG-GS} výsledného klidového stavu pořízený v ParaView. Výsledky úlohy řešené pomocí různých lineárních řešičů vypadají prakticky identicky.
-	
+Na obrázku \ref{fig:pv-GAMG-GS} je výsledný klidový stav zobrazený v ParaView. Klidové stavy získané pomocí různých lineárních řešičů vypadají prakticky identicky.	
 	 \begin{figure}[H]
 		\centering
 		\includegraphics[width=1\linewidth]{pv-GAMG-GS.png}
 		\caption{Klidový stav s vektory rychlosti $U$ v ParaView}
 		\label{fig:pv-GAMG-GS}
 	\end{figure}
-
-
-Na lineárních řešičích budeme zkoumat vliv následujících parametrů na konvergenci simulace:
- 
-\begin{itemize}
+Na lineárních řešičích budeme zkoumat vliv následujících parametrů na konvergenci řešní:
+ \begin{itemize}
 	\item typ použitého řešiče
 	\item typ použitého předpodmiňovače
-	\item typ použitého smootheru
-	\item hodnotu pod-relaxace
+	\item typ použitého vyhlazovače
+	\item hodnotu relaxačního faktoru
 \end{itemize}
-
 Nastavení řešičů se v OpenFOAM dělá v souboru \texttt{system/fvSolution}. Ukázkový soubor je v příloze \ref{app:fvsol}.
 	
- Nejprve nás zajímá typ použitého řešiče, případně přidruženého předpodmiňovače nebo smootheru. V tabulkách \ref{table:solvers_GAMG}, \ref{table:solvers_PCG} a \ref{table:solvers_smooth} jsou uvedená nastavení a výsledné počty iterací řešení úlohy a čas běhu simulace testovací úlohy.
+ Nejprve nás zajímá typ použitého řešiče, případně přidruženého předpodmiňovače nebo smootheru. V tabulkách \ref{table:solvers_GAMG}, \ref{table:solvers_PCG} a \ref{table:solvers_smooth} jsou uvedená nastavení a výsledné počty iterací a celkový čas běhu simulace testovací úlohy.
  
- Konvergenci metody měříme pomocí počtu využitých iterací metody. Maximální počet iterací byl nastaven na $500$. Tolerance lineárního řešiče je shodně nastavena na $10^{-6}$, relativní tolerance na $0$. Velikost reziduí v rámci SIMPLE algoritmu pomocí \texttt{residualControl} parametru pro tlak $p$ nastaveno na $10^{-3}$ a pro rychlost $U$ na $10^{-4}$.
+ Konvergenci metody měříme pomocí počtu využitých časových iterací metody. Maximální počet iterací byl nastaven na $500$. Tolerance lineárního řešiče je shodně nastavena na $10^{-6}$, relativní tolerance na $0$. Velikost reziduí v rámci SIMPLE algoritmu pomocí \texttt{residualControl} parametru pro tlak $p$ nastaveno na $10^{-3}$ a pro rychlost $U$ na $10^{-4}$.
 
  \begin{table}[H]
 	\centering
-	\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
+	\caption{GAMG - výsledky simulací}
 	\renewcommand{\arraystretch}{1.9}
 	\begin{tabular}{*7c}
 		\toprule
-		%\multicolumn{2}{c}{\textbf{Řešič pro $p$}} & \multicolumn{2}{c}{\textbf{Řešič pro $U$}}\\
 		\multicolumn{2}{c}{Tlak $p$: \textbf{GAMG}} & \multicolumn{2}{c}{Rychlost $U$: \textbf{GAMG}}\\		
 		\midrule
-		%\textit{Předpod.}&\textit{Smoother}&\textit{Předpod.}&\textit{Smoother}&\textit{Relaxace}&\textit{ \# iter}&\textit{čas}\\
-		Předpod.&Smoother&Předpod.&Smoother&\# iter&Čas\\
+		Předpod.&Vyhlazovač&Předpod.&Vyhlazovač&\# kroků&Čas (s)\\
 		\midrule
- --- & DIC & --- &  DILU & 475 &157.94\\		
- --- & GaussSeidel &  --- & GaussSeidel & 475&176.99\\
-		
-			\bottomrule
+		 --- & DIC & --- &  DILU & 475 &157.94\\		
+		 --- & GaussSeidel &  --- & GaussSeidel & 475&176.99\\
+		\bottomrule
 \end{tabular}
-
 \label{table:solvers_GAMG}
-
 \end{table}
 
 
 \begin{table}[H]
 \centering
-\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
+\caption{Sdružené gradienty - výsledky simulací}
 \renewcommand{\arraystretch}{1.9}
 \begin{tabular}{*7c}
 \toprule	
-
-%\multicolumn{2}{c}{\textbf{}} & \multicolumn{2}{c}{\textbf{Řešič pro $U$}}\\
-\multicolumn{2}{c}{Tlak $p$: \textbf{PCG}} & \multicolumn{2}{c}{Rychlost $U$: \textbf{PBiCG}}\\		
-\midrule
-%\textit{Předpod.}&\textit{Smoother}&\textit{Předpod.}&\textit{Smoother}&\textit{Relaxace}&\textit{ \# iter}&\textit{čas}\\
-Předpod.&Smoother&Předpod.&Smoother&\# iter&Čas\\
-\midrule
- DIC & --- &  DILU & --- &474&540.48\\								
-FDIC & --- &  DILU & --- &474&531.14\\	
- \shortstack{GAMG\\GS smooth.}& --- &  \shortstack{GAMG\\GS smooth.}& --- &475&184.85\\	
-diagonal & --- & diagonal & ---&474&679.26\\	
-
-		\bottomrule
+\multicolumn{2}{c}{Tlak $p$: \textbf{PCG}} & \multicolumn{2}{c}{Rychlost $U$: \textbf{PBiCG}}\\
+	\midrule
+	Předpod.&Vyhlazovač&Předpod.&Vyhlazovač&\# kroků&Čas (s)\\
+	\midrule
+	 DIC & --- &  DILU & --- &474&540.48\\
+	FDIC & --- &  DILU & --- &474&531.14\\	
+	 \shortstack{GAMG\\GS smooth.}& --- &  \shortstack{GAMG\\GS smooth.}& --- &475&184.85\\
+	diagonal & --- & diagonal & ---&474&679.26\\	
+	\bottomrule
 \end{tabular}
-
 \label{table:solvers_PCG}
-
 \end{table}
+Z výsledků je patrné, že pro naši úlohu ideální GAMG řešič, což odpovídá i obecným doporučením pro řešení úloh pro klidový stav. PCG/PBiCG řešiče dospějí ke stejným výsledkům, v podobném počtu iterací, jen za víc jak dvojnásobný čas, kromě varianty s použitím GAMG předpodmínění. Obecně ale GAMG není tak dobře škálovatelný jaklo PCG/PBiCG a je tedy proto možné, že pro jinou úlohu, případě i stejnou úlohu ale řádově větší síť by mohl být PCG/PBiCG řešič vhodnější.
 
-Z výsledků je patrné, že pro naši úlohu ideální GAMG řešič, což odpovídá i obecným doporučením pro řešení úloh pro klidový stav. PCG/PBiCG řešiče dospějí ke stejným výsledkům, v podobném počtu iterací, jen za víc jak dvojnásobný čas. Obecně al GAMG není tak dobře škálovatelný jaklo PCG/PBiCG a je tedy proto možné, že pro jinou úlohu, případě i stejnou úlohu ale řádově větší síť by mohl být PCG/PBiCG řešič vhodnější.
-
-Na obrázku \ref{fig:p-residuum} jsou zobrazeny průběhy simulací pomocí závislosti velikosti rezidua pro tlak $p$ a různé řešiče. Na obrázku \ref{fig:ux-residuum} je pak totéž, jen pro rychlost v $x$ové souřadnici $U_x$.
-
-
+Na obrázku \ref{fig:p-residuum} jsou zobrazeny průběhy simulací pomocí závislosti velikosti rezidua pro tlak $p$ na kroku metody a pro různé řešiče. Na obrázku \ref{fig:ux-residuum} je pak totéž, jen pro $x$-ovou souřadnici rychlosti $U_x$.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-residuum.png}
-	\caption{Konvergence lineárních řešičů v různé konfiguraci pro tlak $p$}
+	\caption{Konvergence metody pro tlak $p$ pro různé lineární řešiče.}
 	\label{fig:p-residuum}
 \end{figure}
-
-
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{ux-residuum.png}
-	\caption{Konvergence lineárních řešičů v různé konfiguraci pro rychlost $U_x$}
+	\caption{Konvergence metody pro rychlost $U_x$ pro různé lineární řešiče.}
 	\label{fig:ux-residuum}
 \end{figure}
-
-Z výsledků v tabulce \ref{table:solvers_smooth} je vidět, že smoothSolver není pro naši úlohu vhodný. Ani v jednom případě nedokonvergovala úloha ke stacionárnímu stavu v stanovém maximálním počtu 500 iterací.  I čas potřebný ke zpracování této úlohy je výrazně vyšší. 
-
+Z výsledků v tabulce \ref{table:solvers_smooth} je vidět, že smoothSolver není pro naši úlohu vhodný. Ani v jednom případě nedokonvergovala úloha ke stacionárnímu stavu v stanovém maximálním počtu 500 iterací.  I čas potřebný ke zpracování této úlohy je výrazně vyšší oproti použití jiného lineárního řešiče. 
  \begin{table}[H]
 	\centering
-	\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
+	\caption{smoothSolver - výsledky simulací}
 	\renewcommand{\arraystretch}{1.9}
 	\begin{tabular}{*7c}
 		\toprule
 \multicolumn{2}{c}{Tlak $p$: \textbf{smoothSolver}} & \multicolumn{2}{c}{Rychlost $U$: \textbf{smoothSolver}}\\
-%\multicolumn{2}{c}{\textbf{Řešič pro $p$}} & \multicolumn{2}{c}{\textbf{Řešič pro $U$}}\\
-%\multicolumn{2}{c}{\textbf{smoothSolver}} & \multicolumn{2}{c}{\textbf{smoothSolver}}\\		
-\midrule
-%\textit{Předpod.}&\textit{Smoother}&\textit{Předpod.}&\textit{Smoother}&\textit{Relaxace}&\textit{ \# iter}&\textit{čas}\\
-Předpod.&Smoother&Předpod.&Smoother&\# iter&Čas\\
-\midrule		
- --- & DIC &  --- & GaussSeidel &500+&1136.21\\	
- --- & DIC & --- & DILU &500+&1039.73\\
- --- & GaussSeidel &   --- & GaussSeidel &500+&1011.42\\		
- FDIC & GaussSeidel &  --- & GaussSeidel &500+&1008.47\\
- --- & \shortstack{symGauss-\\Seidel} &  --- & \shortstack{symGauss-\\Seidel}&500+&1370.58\\	
-\bottomrule
+	\midrule
+	Předpod.&Vyhlazovač&Předpod.&Vyhlazovač&\# kroků&Čas (s)\\
+	\midrule		
+	 --- & DIC &  --- & GaussSeidel &500+&1136.21\\	
+	 --- & DIC & --- & DILU &500+&1039.73\\
+	 --- & GaussSeidel &   --- & GaussSeidel &500+&1011.42\\		
+	 FDIC & GaussSeidel &  --- & GaussSeidel &500+&1008.47\\
+	 --- & \shortstack{symGauss-\\Seidel} &  --- & \shortstack{symGauss-\\Seidel}&500+&1370.58\\
+	\bottomrule
 \end{tabular}
-	
-	\label{table:solvers_smooth}
+\label{table:solvers_smooth}
 \end{table}
 
 Na obrázcích \ref{fig:p-residuum-smooth} (pro tlak $p$) a \ref{fig:ux-residuum-smooth} (pro rychlost $U_x$) je vidět proč smooth řešič nekonverguje, nebo konverguje velmi pomalu. V obou sledovaných veličinách reziduum osciluje a jeho hodnota se snižuje velmi pomalu.
@@ -511,74 +480,63 @@ Na obrázcích \ref{fig:p-residuum-smooth} (pro tlak $p$) a \ref{fig:ux-residuum
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-residuum-smooth.png}
-	\caption{Konvergence lineárních řešičů smoothSolver v různé konfiguraci pro tlak $p$}
+	\caption{Konvergence metody pro tlak $p$ pro smooth řešiče.}
 	\label{fig:p-residuum-smooth}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{ux-residuum-smooth.png}
-	\caption{Konvergence lineárních řešičů smoothSolver v různé konfiguraci pro rychlost $U_x$}
+	\caption{Konvergence metody pro rychlost $U_x$ pro různé smooth řešiče.}
 	\label{fig:ux-residuum-smooth}
 \end{figure}
-	
-
-
-Na GAMG řešiči si ukážeme vliv hodnoty relaxace. Obecně platí, že vyšší relaxace zvyšuje rychlost konvergence, nižší metodu zestabilní. V tabulce \ref{table:solvers_gamg_relax} jsou výsledky pro různé hodnoty relaxačního parametru v porovnání s defaultní hodnotou $0.9$. 
-
+Na GAMG řešiči si ukážeme vliv hodnoty relaxace. Obecně platí, že vyšší relaxace zvyšuje rychlost konvergence, nižší metodu zestabilní. V tabulce \ref{table:solvers_gamg_relax} jsou výsledky pro různé hodnoty relaxačního parametru v porovnání se základní hodnotou $0.9$. 
  \begin{table}[H]
 	\centering
-	\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
+	\caption{GAMG - výsledky simulací pro různé hodnoty relaxace}
 	\renewcommand{\arraystretch}{1.9}
 	\begin{tabular}{*8c}
 		\toprule
 		\multicolumn{2}{c}{Tlak $p$: \textbf{GAMG}} & \multicolumn{2}{c}{Rychlost $U$: \textbf{GAMG}}\\		
-		\midrule
-		%\textit{Předpod.}&\textit{Smoother}&\textit{Předpod.}&\textit{Smoother}&\textit{Relaxace}&\textit{ \# iter}&\textit{čas}\\
-		Předpod.&Smoother&Předpod.&Smoother&Relaxace& \# iter&Čas\\
-		
-		\midrule
-		
-		--- & GaussSeidel &  --- & GaussSeidel & 0.9&475&176.99\\
-		--- & GaussSeidel &  --- & GaussSeidel & 0.3&500+&151.49\\
-		--- & GaussSeidel &  --- & GaussSeidel & 0.95&285&114.15\\
-		--- & GaussSeidel &  --- & GaussSeidel & 0.98&500+&257.28\\		
-		%%%%DIC & GaussSeidel &  DILU & GaussSeidel & 0.98&475&160.59\\
-		\bottomrule
-	\end{tabular}
-	
-	\label{table:solvers_gamg_relax}
-	
+	\midrule
+	Předpod.&Vyhlazovač&Předpod.&Vyhlazovač&Relaxace&\# kroků&Čas (s)\\
+	\midrule
+	--- & GaussSeidel &  --- & GaussSeidel & 0.9&475&176.99\\
+	--- & GaussSeidel &  --- & GaussSeidel & 0.3&500+&151.49\\
+	--- & GaussSeidel &  --- & GaussSeidel & 0.95&285&114.15\\
+	--- & GaussSeidel &  --- & GaussSeidel & 0.98&500+&257.28\\	
+	\bottomrule
+\end{tabular}
+\label{table:solvers_gamg_relax}
 \end{table}
 
-Ideální hodnotou pro nejrychlejší konvergenci je $0.95$, úloha dokoverguje v 285 iteracích za přibližně $114s$. Hodnota relaxace $0.3$ je moc nízká na to, aby úloha dokonvergovala v maximálním počtu 500 iterací.  Hodnota $0.98$ je naopak moc vysoká a reziduum úlohy se rozkmitá a řešení nekonverguje, jak je vidět z obrázků \ref{fig:p-residuum-relax} a \ref{fig:ux-residuum-relax}.
+Ideální hodnotou relexace je $0.95$, úloha dokoverguje v 285 iteracích za přibližně $114$s. Hodnota relaxace $0.3$ je moc nízká na to, aby úloha dokonvergovala v maximálním počtu 500 iterací.  Hodnota $0.98$ je naopak moc vysoká, reziduum úlohy se rozkmitá a řešení nekonverguje, jak je vidět z obrázků \ref{fig:p-residuum-relax} a \ref{fig:ux-residuum-relax}.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-under-relax.png}
-	\caption{Konvergence lineárních řešičů smoothSolver v různé konfiguraci pro rychlost $U_x$}
+	\caption{GAMG - konvergence rezidua pro různé hodnoty relaxace - tlak $p$}
 	\label{fig:p-residuum-relax}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{ux-under-relax.png}
-	\caption{Konvergence lineárních řešičů smoothSolver v různé konfiguraci pro rychlost $U_x$}
+	\caption{GAMG - konvergence rezidua pro různé hodnoty relaxace - rychlost $U_x$}
 	\label{fig:ux-residuum-relax}
 \end{figure}
 
-Zdálo by se, že použít relaxaci na \uv{opravení} smooth řešiče je dobrý nápad. Z tabulky \ref{table:solvers_set3}  je ale vidět, že se výsledky nijak nezlepší.
+Mohlo by se zdát, že snížení relaxačního faktoru pro eleminaci oscilací u smooth řešiče je dobrý nápad. Z tabulky \ref{table:solvers_set3}  je ale vidět, že se výsledky nijak nezlepší.
 
 \begin{table}[H]
 	\centering
-	\caption{Nastavení lineárních řešičů pro jednotlivé simulace}
+	\caption{smoothSolver - výsledky simulací pro různé hodnoty relaxace}
 	\renewcommand{\arraystretch}{1.9}
 	\begin{tabular}{*8c}
 		\toprule
 		\multicolumn{2}{c}{Tlak $p$: \textbf{smoothSolver}} & \multicolumn{2}{c}{Rychlost $U$: \textbf{smoothSolver}}\\
 		\midrule
-		%\textit{Předpod.}&\textit{Smoother}&\textit{Předpod.}&\textit{Smoother}&\textit{Relaxace}&\textit{ \# iter}&\textit{čas}\\
-		Předpod.&Smoother&Předpod.&Smoother&Relaxace& \# iter&Čas\\
+		Předpod.&Vyhlazovač&Předpod.&Vyhlazovač&Relaxace&\# kroků&Čas (s)\\
 		\midrule
 		--- & GaussSeidel &   --- & GaussSeidel &0.9&500+&1011.42\\
 		--- & GaussSeidel &  --- & GaussSeidel &0.3&500+&951.71\\
@@ -587,26 +545,22 @@ Zdálo by se, že použít relaxaci na \uv{opravení} smooth řešiče je dobrý
 		FDIC & GaussSeidel &  --- & GaussSeidel &0.9&500+&1008.47\\
 		\bottomrule
 	\end{tabular}
-	
 	\label{table:solvers_set3}
 \end{table}
 
-Další parametr, který popíše \uv{úspěšnost} lineárního řešiče při řešení úlohy je počet iteračních kroků lineárního řešiče v rámci časových kroků metody. V každém kroku řeší lineární řešič soustavu a zastaví iterování v chvíli, kdy dosáhne nastavené tolerance. Na obrázcích \ref{fig:p-iters-1} a \ref{fig:p-iters-2} je vidět tato závislost pro řešení tlaku $p$, na obrázku \ref{fig:ux-iters} pak pro rychlost $U_x$. Ze všech tří grafů opět vyplývá, že GAMG řešič dosahuje nejlepší konvergence. Naopak smoothSolver naráží ve všech časových iterací metody na maximální možnou hodnotu iterací řešiče $1000$.
-
+Další parametr, který popíše \uv{úspěšnost} lineárního řešiče soustavy je počet iteračních kroků lineárního řešiče v rámci časových kroků metody. V každém kroku řeší lineární řešič soustavu a zastaví iterování ve chvíli, kdy dosáhne nastavené tolerance. Na obrázcích \ref{fig:p-iters-1} a \ref{fig:p-iters-2} je vidět tato závislost pro různé řešiče a tlak $p$, na obrázku \ref{fig:ux-iters} pak pro rychlost $U_x$. Ze všech tří grafů opět vyplývá, že GAMG dosahuje nejlepší konvergence počtu iterací řešiče. Naopak smoothSolver naráží ve všech časových iteracích metody na maximální možnou hodnotu iterací lineárního řešiče $1000$.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-solver-iters-1.png}
 	\caption{Počet iterací lineárního řešiče v závislosti na iteraci metody pro tlak $p$}
 	\label{fig:p-iters-1}
 \end{figure}
-
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-solver-iters-2.png}
 	\caption{Počet iterací lineárního řešiče v závislosti na iteraci metody pro tlak $p$}
 	\label{fig:p-iters-2}
 \end{figure}
-
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{ux-solver-iters.png}
@@ -614,11 +568,10 @@ Další parametr, který popíše \uv{úspěšnost} lineárního řešiče při 
 	\label{fig:ux-iters}
 \end{figure}
 
-
-
 {\let\clearpage\relax \chapter{Závěr}}
 
-Ukázali jsme, jakými parametry lineárních řešičů se dá ovlivnit výsledná konvergence úlohy. Obecně nelze říci, který řešič je nejvhodnější a to ani pro konkrétní úlohu. Pro naši ukázkovou úlohu proudění v lopatkové mříži a pro konkrétní síť je nejvhodnější GAMG řešič s GaussSeidel smootherem a relaxací nastavenou na $0.95$. Tato volba ale nemusí být optimální pro jinou síť, jinak nastavené parametry turbulence nebo i jiný hardware, na kterém úlohu řešíme. Předchozí text by tedy měl sloužit přinejlepším jen jako přehled a ukázka řešičů dostupných v OpenFOAM.
+Ukázali jsme jakými parametry lineárních řešičů se dá ovlivnit konvergence řešení soustavy algebraických rovníc a tím i výsledná konvergence řešení úlohy. Obecně nelze říci, který řešič je nejvhodnější a to ani pro konkrétní úlohu. Pro naši ukázkovou úlohu proudění v lopatkové mříži a pro konkrétní síť je nejvhodnější GAMG řešič s GaussSeidel smootherem a relaxací nastavenou na hodnotu $0.95$. Tato volba ale nemusí být optimální pro jinou síť, jinak nastavené parametry turbulence nebo i jiný hardware, na kterém úlohu řešíme. Víceúrovňové řešiče jsou ale vždy volbou, kterou bychom speciálně v úlohách se stacionárním stavem měli zkoušet jako první.
+%Předchozí text by tedy měl sloužit přinejlepším jen jako přehled a ukázka řešičů dostupných v OpenFOAM.
 
 
 
@@ -790,7 +743,6 @@ mergePatchPairs
 		object      fvSolution;
 	}
 	// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
 	solvers
 	{
 		p
@@ -809,7 +761,6 @@ mergePatchPairs
 			relTol          0; 
 		}
 	}
-	
 	SIMPLE
 	{
 		nNonOrthogonalCorrectors 0;
@@ -822,7 +773,6 @@ mergePatchPairs
 			"(k|epsilon|omega|f|v2)" 1e-4;
 		}
 	}
-	
 	relaxationFactors
 	{
 		equations
@@ -831,8 +781,6 @@ mergePatchPairs
 			".*"            .95;
 		}
 	}
-	
-	
 	// ************************************************************** //
 \end{verbatim}
 	
