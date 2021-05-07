@@ -151,7 +151,7 @@ bottom=4cm,
 \begin{equation}
 	\boldsymbol{x} = \boldsymbol{A}^{-1} \boldsymbol{b}.	
 \end{equation}  
-Většina přímých metod je založna na Gaussově eliminici a případné transformaci úlohy na úlohu se stejným řešením ale snadněji řešitelnou, například pomocí LU nebo DILU rozkladu.
+Většina přímých metod je založena na Gaussově eliminaci a případné transformaci úlohy na úlohu se stejným řešením ale snadněji řešitelnou, například pomocí LU nebo DILU rozkladu.
 
 	I když přímé řešiče naleznou vždy přesné řešení v konečném počtu kroků, výpočetní náročnost je extrémní. Inverzi $\boldsymbol{A} ^{-1}$ není výpočetně levné nalézt a proto se většinou používají přibližné řešiče iterační. Výhodou těchto metod je mnohem menší výpočetní náročnost i náročnost na paměť. V jednotlivých iteracích metoda počítá posloupnost řešení $\boldsymbol{x}^{(n)}$, která za daných podmínek konverguje k řešení $\boldsymbol{x}$.  Nejčastěji využívané iterační řešiče jsou Gaussova-Seidelova metoda, metody Krylovových prostorů (kam patří například metoda sdružených gradientů) a víceúrovňové metody.
 	
@@ -160,23 +160,23 @@ Většina přímých metod je založna na Gaussově eliminici a případné tran
 		\boldsymbol{r} ^{(n)} = \boldsymbol{b}-\boldsymbol{A} \boldsymbol{x}^{(n)}.
 		\label{eq:residuum}
 	\end{equation} 
-Zastavení řešiče je pak definováno obecně jako pokles residua pod nastavenou hodnotu
+Zastavení řešiče je pak definováno obecně jako pokles rezidua pod nastavenou hodnotu
 \begin{equation}
 	\Vert{\boldsymbol{r}^{(n)}}\Vert < \epsilon.
 \end{equation}
 	OpenFOAM obsahuje kromě přímých řešičů hlavně iterační řešiče pomocí gradientních metod, víceúrovňových metod a řešiče pomocí smootherů (vyhlazovačů).
 	
-\textbf{Gradientní metody} jsou založeny na principu přeformulévání úlohy \eqref{eq:linear_set} na úlohu  minimalizace kvadratické funkce
+\textbf{Gradientní metody} jsou založeny na principu přeformulování úlohy \eqref{eq:linear_set} na úlohu  minimalizace kvadratické funkce
 \begin{equation}
-	\boldsymbol{Q}(\boldsymbol{x}) = \frac{1}{2} \boldsymbol{x}^T \boldsymbol{A} \boldsymbol{x}-\boldsymbol{b}^T \boldsymbol{x} + \boldsymbol{c}.
+	Q(\boldsymbol{x}) = \frac{1}{2} \boldsymbol{x}^T \boldsymbol{A} \boldsymbol{x}-\boldsymbol{b}^T \boldsymbol{x} + \boldsymbol{c}.
 	\label{eq:quad_func}
 \end{equation}
 V případě symetrické a pozitivně definitní matice $\boldsymbol{A}$ je iterační metoda řešení úlohy \eqref{eq:linear_set} definována vztahem
 \begin{equation}
-	\boldsymbol{x}^{(n+1)} = \boldsymbol{x}^{(n)} + \alpha^{(n)} \left( \boldsymbol{\delta} \boldsymbol{x}^{(n)} \right),
+	\boldsymbol{x}^{(n+1)} = \boldsymbol{x}^{(n)} + \alpha^{(n)} \left( \delta \boldsymbol{x}^{(n)} \right),
 	\label{eq:grad_iter}
 \end{equation}
-kde $\alpha^{(n)}$ je relaxační faktor (viz níže) a $\boldsymbol{\delta} \boldsymbol{x}^{(n)}$ je člen minimalizující funkci \eqref{eq:quad_func}, který lze získat například metodou největšího spádu, kdy použijeme jako minimalizující prvek gradient $\nabla Q(\boldsymbol{x}^{(n)})$. To ale často vede k oscilacím okolo minima a proto se více používá metoda sdružených gradientů. Ta pracuje s posloupností $N$ směrů  $\boldsymbol{d}^{(0)}, \boldsymbol{d}^{(1)}, \boldsymbol{d}^{(2)} \cdots \boldsymbol{d}^{(N-1)}$ takových, že splňují
+kde $\alpha^{(n)}$ je relaxační faktor (viz níže) a $\delta \boldsymbol{x}^{(n)}$ je člen minimalizující funkci \eqref{eq:quad_func}, který lze získat například metodou největšího spádu, kdy použijeme jako minimalizující prvek gradient $\nabla Q(\boldsymbol{x}^{(n)})$. To ale často vede k oscilacím okolo minima a proto se více používá metoda sdružených gradientů. Ta pracuje s posloupností $N$ směrů  $\boldsymbol{d}^{(0)}, \boldsymbol{d}^{(1)}, \boldsymbol{d}^{(2)} \cdots \boldsymbol{d}^{(N-1)}$ takových, že splňují
 \begin{equation*}
 	\left(\boldsymbol{d}^{(n)}\right)^T\boldsymbol{A} \boldsymbol{d}^{(m)} = 0
 \end{equation*}
@@ -185,7 +185,7 @@ a jsou tedy $\boldsymbol{A}$-ortogonální. Metoda sdružených gradientů je po
 	\boldsymbol{x}^{(n+1)} = \boldsymbol{x}^{(n)} + \alpha^{(n)} \boldsymbol{d}^{(n)}.
 	\label{eq:grad_cg}
 \end{equation*}
-V případě, že není matice $\boldsymbol{A}$ symetrická, lze použít metodu bi-sdružených gradientů, která transformuje úlohu \eqref{eq:linear_set} na úlohu se symetrickou maticí následovně.
+V případě, že není matice $\boldsymbol{A}$ symetrická, lze použít metodu dvoj-sdružených gradientů (bi-conjugate gradients), která transformuje úlohu \eqref{eq:linear_set} na úlohu se symetrickou maticí následovně.
 \begin{equation}
 	\begin{bmatrix}
 		0 & \boldsymbol{A}\\
@@ -200,7 +200,7 @@ V případě, že není matice $\boldsymbol{A}$ symetrická, lze použít metodu
 		0
 	\end{bmatrix}
 \end{equation}
-V součastnosti asi nejpoužívanější jsou \textbf{víceúrovňové} (multigrid) metody. Ty odstraňují základní problém Krylovovských metod, tedy vysokou náročnost na hardware už pro středně velké úlohy. Základní myšlenkou je využití několika různě velkých sití. Jemnější pro detailnější řešení a odstranění vysokofrekvenčních chyb, hrubší pak pro rychlé odstranění nízkofrekvenčních chyb, které nejsou na jemnějších sítích rozpoznatelné a proto často prodlužují konvergenci. 
+V součastnosti asi nejpoužívanější jsou \textbf{víceúrovňové} (multigrid) metody. Ty odstraňují základní problém Krylovovských metod, tedy vysokou náročnost na hardware už pro středně velké úlohy. Základní myšlenkou je využití několika různě velkých sítí. Jemnější pro detailnější řešení a odstranění vysokofrekvenčních chyb, hrubší pak pro rychlé odstranění nízkofrekvenčních chyb, které nejsou na jemnějších sítích rozpoznatelné a proto často prodlužují konvergenci. 
 
 Víceúrovňová metoda postupuje v následujících krocích:
 \begin{enumerate}
@@ -211,7 +211,9 @@ Víceúrovňová metoda postupuje v následujících krocích:
 	\item několik kroků iterační metody na vyhlazení vysokofrekvenčních chyb - post-smoothing.
 \end{enumerate}
 
-Úrovní sítí je většinou více než 2 a podle způsobu přechodů mezi nimy (restriction a prolongation fáze) se mluví o tzv. V-cyklech, W-cyklech, případně F-cyklech. Víceúrovňové metody jsou dvojího typu:
+Úrovní sítí je většinou více než 2 a podle způsobu přechodů mezi nimy (restriction a prolongation fáze) se mluví o tzv. V-cyklech, W-cyklech, případně F-cyklech. 
+
+Víceúrovňové metody jsou dvojího typu:
 \begin{itemize}
 	\item geometrické - na úrovni sítě, využívá informaci o sousedních elementech,
 	\item algebraické - na úrovni matice, bez znalosti geometrie, je univerzální pro jakékoliv problémy.
@@ -241,11 +243,11 @@ kde $\boldsymbol{P}$ je předpodmiňovač. Ten zajistí, že konvergence předpo
 	\end{equation}
 Další vyhlazovače jsou pak založeny na principu LU, DILU, nebo Choleského rozkladu.
 	
-	Aby se zlepšila stabilita numerického řešiče, doporučuje se využít \textbf{relaxaci} metody. Pomocí relaxačního faktoru $\alpha,\; 0 < \alpha \leq 1 $, limituje relaxace změnu řešení mezi jednotlivými iteracemi dle vztahu \eqref{eq:grad_iter}. Pokud je   $\alpha = 1$ , žádná relaxace se neuplatňuje, $\alpha = 0$ znamená žádnou změnu mezi jednotlivými kroky.   Optimální $\alpha$ je dostatečně malé, aby zabránilo oscilacím v numerických výpočtech a zároveň dostatečně velké, aby nezpomalovalo nadměrně konvergenci. 
+	Aby se zlepšila stabilita numerického řešiče, doporučuje se využít \textbf{relaxaci}. Pomocí relaxačního faktoru $\alpha,\; 0 < \alpha \leq 1 $, limituje relaxace změnu řešení mezi jednotlivými iteracemi dle vztahu \eqref{eq:grad_iter}. Pokud je   $\alpha = 1$ , žádná relaxace se neuplatňuje, $\alpha = 0$ znamená žádnou změnu mezi jednotlivými kroky.   Optimální $\alpha$ je dostatečně malé, aby zabránilo oscilacím v numerických výpočtech a zároveň dostatečně velké, aby nadměrně nezpomalovalo konvergenci. 
 	
 	{\let\clearpage\relax \chapter{Lineární řešiče v OpenFOAM}}
 
-OpenFOAM obsahuje kromě základního přímého řešiče \texttt{diagonalSolver} tři základní typy řešičů:
+OpenFOAM obsahuje kromě přímého řešiče \texttt{diagonalSolver} tři základní typy řešičů:
 \begin{enumerate}
 	\item řešiče typu sdružených gradientů 
 	\item víceúrovňové řešiče
@@ -276,21 +278,21 @@ V tabulce \ref{table:solvers} jsou uvedeny konkrétní řešiče.
 	\label{table:solvers}
 \end{table}
 		
-	To který řešič je možné použít je závislé na symetrii matice $\boldsymbol{A}$. Ta samozřejmě závisí na řešených rovnicích. V případě, že zvolíme nesprávný řešič vzhledem k symetričnosti matice $\boldsymbol{A}$ OpenFOAM sám volbu opraví.
+	To který řešič je možné použít je závislé na symetrii matice $\boldsymbol{A}$. Ta samozřejmě závisí na řešených rovnicích. V případě, že zvolíme nesprávný řešič vzhledem k symetričnosti matice $\boldsymbol{A}$, OpenFOAM sám volbu opraví.
 	
-	Řešičem o kterém jsme dosud nemluvili je řešič založený na vyhlazovači, kdy vybraný smoother slouží nejen k vyhlazení, ale i k řešení soustavy.  Většinou je nejlepší volbou Gauss-Seidel.
+	Řešičem o kterém jsme dosud nemluvili je řešič smoothSolver založený na vyhlazovači, kdy vybraný smoother slouží nejen k vyhlazení, ale i k řešení soustavy.  Většinou je nejlepší volbou Gauss-Seidel.
 	
-	Doporučeným řešičem v OpenFOAM je, jak jsme již uvedli v teoretické části obecně,  víceúrovňový řešič GAMG (geometric-algebraic multi-grid).
+	Doporučeným řešičem v OpenFOAM je, jak jsme již uvedli v teoretické části,  víceúrovňový řešič GAMG (geometric-algebraic multi-grid).
 
-	Pro zastavení řešiče se využívá vypočtené reziduum, během jednotlivých iterací je vyhodnocováno pomocí vztahu \eqref{eq:residuum}. Každý řešič má k reziduu trochu jíný přístup, obecně ale dochází k normalizaci a škálování rezidua $\boldsymbol{r}$ vztahy
+	Pro zastavení řešiče se využívá vypočtené reziduum, vyhodnocované během jednotlivých iterací pomocí vztahu \eqref{eq:residuum}. Každý řešič má k reziduu trochu jíný přístup, obecně ale dochází k normalizaci a škálování rezidua $\boldsymbol{r}$ vztahy
 \begin{eqnarray}
 n &=& \sum \left( | \boldsymbol{A} \boldsymbol{x} - \boldsymbol{A} \overline{\boldsymbol{x}} | + | \boldsymbol{b} - \boldsymbol{A} \overline{\boldsymbol{x}} | \right), \nonumber \\
  \nonumber \\
-\boldsymbol{r} &=& \frac{1}{n} \sum | \boldsymbol{b} - \boldsymbol{A} \boldsymbol{x} |,
+r &=& \frac{1}{n} \sum | \boldsymbol{b} - \boldsymbol{A} \boldsymbol{x} |,
 \end{eqnarray}
 kde $\overline{\boldsymbol{x}}$ je průměrný vektor řešení.  
 
-Pro každý typ řešice je třeba nastavit zastavovací parametr pro velikost rezidua (\texttt{tolerance}) a také relativní toleranci (\texttt{relTol}) což je poměr aktuálního rezidua a počátečního rezidua před začátkem iterace. Lineární řešič se následně zastaví pokud je splněna alespoň jedna z těchto podmínek:
+Pro každý typ řešice je třeba nastavit zastavovací parametr pro velikost rezidua (\texttt{tolerance}) a také relativní toleranci (\texttt{relTol}) což je poměr aktuálního rezidua a rezidua před začátkem iterace. Lineární řešič se následně zastaví pokud je splněna alespoň jedna z těchto podmínek:
 \begin{enumerate}
 	\item reziduum je menší než nastavená \texttt{tolerance},
 	\item relativní tolerance je menší než nastavená \texttt{relTol},
@@ -329,7 +331,7 @@ U většiny řešičů je pak volitelně nastaven předpodmiňovač případně 
 	\renewcommand{\arraystretch}{1.7}
 	\begin{tabular}{*2l}
 		\toprule
-		\textbf{Vyhlazovačč} & \textbf{Označení}\\
+		\textbf{Vyhlazovač} & \textbf{Označení}\\
 		\midrule
 		{\small DIC Gauss Seidel vyhlazovač}& DICGaussSeidel\\
 		{\small DIC vyhlazovač}& DIC\\		
@@ -343,14 +345,14 @@ U většiny řešičů je pak volitelně nastaven předpodmiňovač případně 
 
 	{\let\clearpage\relax \chapter{Porovnání řešičů}}
 	
-	Lineární řešiče porovnáme na simulaci úlohy stacionárního proudění v lopatkové mříži. Zachováme přitom jednotné parametry nastavení úlohy kromě nastavení jednotlivých lineárních řešičů. Zajímat nás bude konvergence řešení a výpočetní náročnost. Sledovat budeme počet časových kroků výpočtu stacionárního stavu, počet iterací lineárního řešiče a celkový čas simulace úlohy. Zadání úlohy je na obrázku \ref{fig:zadani}, který definuje geometrii úlohy i okrajové podmínky. 
+	Lineární řešiče porovnáme na simulaci úlohy stacionárního nestlačitelného proudění v lopatkové mříži. Zachováme přitom jednotné parametry nastavení úlohy kromě nastavení testovaných lineárních řešičů. Zajímat nás bude konvergence řešení a výpočetní náročnost. Sledovat budeme počet časových kroků výpočtu stacionárního stavu, počet iterací lineárního řešiče a celkový čas simulace úlohy. Zadání je na obrázku \ref{fig:zadani}, který definuje geometrii úlohy i okrajové podmínky. 
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=1\linewidth]{zadani.png}
 		\caption{Zadání řešeného modelu}
 		\label{fig:zadani}
 	\end{figure}
-Prvním krokem je definice sítě na které budeme naši úlohu řešit. Úloha je v 2D, ale OpenFOAM řeší vše ve 3D. Třetí souřadnici tedy nastavíme minimální, jen jako jednu buňku, a budeme ji ve výsledcích vlastně ignorovat.  Nejvíce se toho bude dít kolem \uv{vykousnuté} části a proto v těchto místech síť nastavíme hustší, jak je vidět na obrázku \ref{fig:pvmesh-detail}. Celá síť je pak na obrázku \ref{fig:pvmesh} a obsahuje celkem $108800$ jednotlivých buněk. Konkrétní definice sítě je v souboru \texttt{blockMeshDict} v příloze \ref{app:blockmeshdict}.
+Prvním krokem je definice sítě na které budeme úlohu řešit. Úloha je v 2D, ale OpenFOAM řeší vše ve 3D. Třetí souřadnici tedy nastavíme minimální, jen jako jednu buňku, a budeme ji ve výsledcích vlastně ignorovat.  Nejvíce se toho bude dít kolem \uv{vykousnuté} části a proto v těchto místech síť nastavíme hustší, jak je vidět na obrázku \ref{fig:pvmesh-detail}. Celá síť je pak na obrázku \ref{fig:pvmesh} a obsahuje celkem $108 800$ jednotlivých buněk. Konkrétní definice sítě je v souboru \texttt{blockMeshDict}\linebreak v příloze \ref{app:blockmeshdict}.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{pv-mesh-detail.png}
@@ -368,7 +370,7 @@ Prvním krokem je definice sítě na které budeme naši úlohu řešit. Úloha 
 
 Okrajové podmínky pro jednotlivé veličiny, pro nás primárně pro rychlost $U$ a tlak $p$  jsou definovány v souborech ve složce \texttt{0}.
 
-Ostatní parametry řešiče úlohy, netýkající se přímo lineárních řešičů, jsou pro všechny simulace totožné a jsou v souborech \texttt{transportProperties}, \texttt{turbulenceProperties}, \texttt{fvSchemes} a \texttt{controlDict}. Zde uvedeme jen vybrané parametry popisující naší úlohu.
+Ostatní parametry řešiče úlohy, netýkající se přímo lineárních řešičů, jsou pro všechny simulace totožné a jsou v souborech \texttt{transportProperties}, \linebreak \texttt{turbulenceProperties}, \texttt{fvSchemes} a \texttt{controlDict}. Zde uvedeme jen vybrané parametry popisující naší úlohu.
 
 \begin{itemize}
 	\item{\makebox[5cm]{application:\hfill}simpleFoam}
@@ -390,7 +392,7 @@ Na obrázku \ref{fig:pv-GAMG-GS} je výsledný klidový stav zobrazený v ParaVi
 		\caption{Klidový stav s vektory rychlosti $U$ v ParaView}
 		\label{fig:pv-GAMG-GS}
 	\end{figure}
-Na lineárních řešičích budeme zkoumat vliv následujících parametrů na konvergenci řešní:
+Na lineárních řešičích budeme zkoumat vliv následujících parametrů na konvergenci řešení:
  \begin{itemize}
 	\item typ použitého řešiče
 	\item typ použitého předpodmiňovače
@@ -399,7 +401,7 @@ Na lineárních řešičích budeme zkoumat vliv následujících parametrů na 
 \end{itemize}
 Nastavení řešičů se v OpenFOAM dělá v souboru \texttt{system/fvSolution}. Ukázkový soubor je v příloze \ref{app:fvsol}.
 	
- Nejprve nás zajímá typ použitého řešiče, případně přidruženého předpodmiňovače nebo smootheru. V tabulkách \ref{table:solvers_GAMG}, \ref{table:solvers_PCG} a \ref{table:solvers_smooth} jsou uvedená nastavení a výsledné počty iterací a celkový čas běhu simulace testovací úlohy.
+ Nejprve nás zajímá typ použitého řešiče, případně přidruženého předpodmiňovače nebo vyhlazovače. V tabulkách \ref{table:solvers_GAMG}, \ref{table:solvers_PCG} a \ref{table:solvers_smooth} jsou uvedená nastavení a výsledné počty iterací a celkový čas běhu simulace testovací úlohy.
  
  Konvergenci metody měříme pomocí počtu využitých časových iterací metody. Maximální počet iterací byl nastaven na $500$. Tolerance lineárního řešiče je shodně nastavena na $10^{-6}$, relativní tolerance na $0$. Velikost reziduí v rámci SIMPLE algoritmu pomocí \texttt{residualControl} parametru pro tlak $p$ nastaveno na $10^{-3}$ a pro rychlost $U$ na $10^{-4}$.
 
@@ -439,7 +441,7 @@ Nastavení řešičů se v OpenFOAM dělá v souboru \texttt{system/fvSolution}.
 \end{tabular}
 \label{table:solvers_PCG}
 \end{table}
-Z výsledků je patrné, že pro naši úlohu ideální GAMG řešič, což odpovídá i obecným doporučením pro řešení úloh pro klidový stav. PCG/PBiCG řešiče dospějí ke stejným výsledkům, v podobném počtu iterací, jen za víc jak dvojnásobný čas, kromě varianty s použitím GAMG předpodmínění. Obecně ale GAMG není tak dobře škálovatelný jaklo PCG/PBiCG a je tedy proto možné, že pro jinou úlohu, případě i stejnou úlohu ale řádově větší síť by mohl být PCG/PBiCG řešič vhodnější.
+Z výsledků je patrné, že pro naši úlohu ideální GAMG řešič, což odpovídá i obecným doporučením pro řešení úloh pro klidový stav. PCG/PBiCG řešiče dospějí ke stejným výsledkům, v podobném počtu iterací, jen za víc jak dvojnásobný čas, kromě varianty s použitím GAMG předpodmínění. 
 
 Na obrázku \ref{fig:p-residuum} jsou zobrazeny průběhy simulací pomocí závislosti velikosti rezidua pro tlak $p$ na kroku metody a pro různé řešiče. Na obrázku \ref{fig:ux-residuum} je pak totéž, jen pro $x$-ovou souřadnici rychlosti $U_x$.
 \begin{figure}[H]
@@ -530,12 +532,12 @@ Mohlo by se zdát, že snížení relaxačního faktoru pro eleminaci oscilací 
 
 \begin{table}[H]
 	\centering
-	\caption{smoothSolver - výsledky simulací pro různé hodnoty relaxace}
+	\caption{\textbf{smoothSolver} - výsledky simulací pro různé hodnoty relaxace}
 	\renewcommand{\arraystretch}{1.9}
 	\begin{tabular}{*8c}
 		\toprule
-		\multicolumn{2}{c}{Tlak $p$: \textbf{smoothSolver}} & \multicolumn{2}{c}{Rychlost $U$: \textbf{smoothSolver}}\\
-		\midrule
+		%\multicolumn{2}{c}{Tlak $p$: \textbf{smoothSolver}} & \multicolumn{2}{c}{Rychlost $U$: \textbf{smoothSolver}}\\
+		%\midrule
 		Předpod.&Vyhlazovač&Předpod.&Vyhlazovač&Relaxace&\# kroků&Čas (s)\\
 		\midrule
 		--- & GaussSeidel &   --- & GaussSeidel &0.9&500+&1011.42\\
@@ -543,24 +545,36 @@ Mohlo by se zdát, že snížení relaxačního faktoru pro eleminaci oscilací 
 		--- & GaussSeidel &   --- & GaussSeidel &0.95&500+&1086.7\\
 		--- & GaussSeidel &  --- & GaussSeidel &0.98&500+&1222.24\\
 		FDIC & GaussSeidel &  --- & GaussSeidel &0.9&500+&1008.47\\
+
+%		--- & GS &   --- & GS &0.9&500+&1011.42\\
+%		--- & GS &  --- & GS &0.3&500+&951.71\\
+%		--- & GS &   --- & GS &0.95&500+&1086.7\\
+%		--- & GS &  --- & GS &0.98&500+&1222.24\\
+
 		\bottomrule
 	\end{tabular}
 	\label{table:solvers_set3}
 \end{table}
 
-Další parametr, který popíše \uv{úspěšnost} lineárního řešiče soustavy je počet iteračních kroků lineárního řešiče v rámci časových kroků metody. V každém kroku řeší lineární řešič soustavu a zastaví iterování ve chvíli, kdy dosáhne nastavené tolerance. Na obrázcích \ref{fig:p-iters-1} a \ref{fig:p-iters-2} je vidět tato závislost pro různé řešiče a tlak $p$, na obrázku \ref{fig:ux-iters} pak pro rychlost $U_x$. Ze všech tří grafů opět vyplývá, že GAMG dosahuje nejlepší konvergence počtu iterací řešiče. Naopak smoothSolver naráží ve všech časových iteracích metody na maximální možnou hodnotu iterací lineárního řešiče $1000$.
+Další parametr, popisující konvergenci lineárního řešiče soustavy je počet iteračních kroků lineárního řešiče v rámci časových kroků metody. V každém kroku řeší lineární řešič soustavu a zastaví iterování ve chvíli, kdy dosáhne nastavené tolerance.
+
+Na obrázcích \ref{fig:p-iters-1} a \ref{fig:p-iters-2} je vidět tato závislost pro různé řešiče a tlak $p$, na obrázku \ref{fig:ux-iters} pak pro rychlost $U_x$. Ze všech tří grafů opět vyplývá, že GAMG dosahuje nejlepší konvergence počtu iterací řešiče. Naopak smoothSolver naráží ve všech časových iteracích metody na maximální možnou hodnotu iterací lineárního řešiče $1000$, což vysvětluje i velmi dlouhý běh simulace.
+
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-solver-iters-1.png}
 	\caption{Počet iterací lineárního řešiče v závislosti na iteraci metody pro tlak $p$}
 	\label{fig:p-iters-1}
 \end{figure}
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{p-solver-iters-2.png}
 	\caption{Počet iterací lineárního řešiče v závislosti na iteraci metody pro tlak $p$}
 	\label{fig:p-iters-2}
 \end{figure}
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{ux-solver-iters.png}
@@ -570,9 +584,22 @@ Další parametr, který popíše \uv{úspěšnost} lineárního řešiče soust
 
 {\let\clearpage\relax \chapter{Závěr}}
 
-Ukázali jsme jakými parametry lineárních řešičů se dá ovlivnit konvergence řešení soustavy algebraických rovníc a tím i výsledná konvergence řešení úlohy. Obecně nelze říci, který řešič je nejvhodnější a to ani pro konkrétní úlohu. Pro naši ukázkovou úlohu proudění v lopatkové mříži a pro konkrétní síť je nejvhodnější GAMG řešič s GaussSeidel smootherem a relaxací nastavenou na hodnotu $0.95$. Tato volba ale nemusí být optimální pro jinou síť, jinak nastavené parametry turbulence nebo i jiný hardware, na kterém úlohu řešíme. Víceúrovňové řešiče jsou ale vždy volbou, kterou bychom speciálně v úlohách se stacionárním stavem měli zkoušet jako první.
+Ukázali jsme jakými parametry lineárních řešičů se dá ovlivnit konvergence řešení soustavy algebraických rovníc a tím i výsledná konvergence řešení úlohy. Obecně nelze říci, který řešič je nejvhodnější a to ani pro konkrétní úlohu. Pro naši ukázkovou úlohu proudění v lopatkové mříži a pro konkrétní síť je nejvhodnější GAMG řešič s GaussSeidel smootherem a relaxací nastavenou na hodnotu $0.95$. Tato volba ale nemusí být optimální pro jinak zkonstruovanou síť, jinak nastavené parametry turbulence nebo i jiný hardware, na kterém úlohu řešíme. Víceúrovňové řešiče jsou ale vždy volbou, kterou bychom speciálně v úlohách se stacionárním stavem měli zkoušet jako první.
 %Předchozí text by tedy měl sloužit přinejlepším jen jako přehled a ukázka řešičů dostupných v OpenFOAM.
 
+\begin{thebibliography}{Literatura}
+\addcontentsline{toc}{chapter}{Literatura}	
+	\bibitem{knizka} Fadl Moukalled, Luca Mangani, Marwan Darwish:
+	\emph{The Finite Volume Method in Computational Fluid Dynamics: An Advanced Introduction with OpenFOAM® and Matlab®}, Springer International Publishing, ISBN: 978-3-319-16873-9 , 2015.
+	
+	\bibitem{openfoam}OpenFOAM Foundation:
+	\emph{OpenFOAM User Guide}, \url{https://www.openfoam.com/documentation/user-guide/6-solving/6.3-solution-and-algorithm-control}, 2021
+	
+	\bibitem{knizka} Tim Behrens:
+	\emph{OpenFOAM's basic solvers for linear systems of equations}, Technical University of Denmark, \url{http://www.tfd.chalmers.se/~hani/kurser/OS_CFD_2008/TimBehrens/tibeh-report-fin.pdf}, 2009.
+	
+
+\end{thebibliography}
 
 
 \newpage
